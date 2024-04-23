@@ -6,14 +6,14 @@ export default function MyTable({ TableData }: any) {
 
   const [numRows, setNumRows] = useState(3);
   const [numCols, setNumCols] = useState(3);
-  const [tableData, setTableData] = useState([]);
+  const [tableData, setTableData] = useState<any>([]);
 
-  const handleNumRowsChange = (e) => {
+  const handleNumRowsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);
     setNumRows(isNaN(value) ? 0 : value);
   };
 
-  const handleNumColsChange = (e) => {
+  const handleNumColsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);
     setNumCols(isNaN(value) ? 0 : value);
   };
@@ -23,28 +23,46 @@ export default function MyTable({ TableData }: any) {
     setTableData(data);
   };
 
-  const handleCellChange = (e, rowIndex, colIndex) => {
+  const handleCellChange = (e: React.ChangeEvent<HTMLInputElement>, rowIndex: number, colIndex: number) => {
     const updatedData = [...tableData];
     updatedData[rowIndex][colIndex] = e.target.value;
     setTableData(updatedData);
+    TableData(tableData)
   };
+
 
   const renderTable = () => {
     return (
-      <table className="max-w-screen-xl overflow-x-auto">
+      <table>
         <tbody>
-          {tableData.map((row, rowIndex) => (
-            <tr key={rowIndex}>
-              {row.map((cell, colIndex) => (
-                <td className="border" key={colIndex}>
-                  <input
-                    type="text"
-                    value={cell}
-                    onChange={e => handleCellChange(e, rowIndex, colIndex)}
-                  />
-                </td>
-              ))}
-            </tr>
+          {tableData.map((row: any, rowIndex: number) => (
+            rowIndex == 0 ? (
+              <tr key={rowIndex}>
+                {row.map((cell: any, colIndex: number) => (
+                  <th className="border border-black" key={colIndex}>
+                    <input
+                      type="text"
+                      value={cell}
+                      onChange={e => handleCellChange(e, rowIndex, colIndex)}
+                    />
+                  </th>
+                ))}
+              </tr>
+            )
+              :
+              (
+                <tr key={rowIndex}>
+                  {row.map((cell: any, colIndex: number) => (
+                    <td className="border border-black" key={colIndex}>
+                      <input
+                        type="text"
+                        value={cell}
+                        onChange={e => handleCellChange(e, rowIndex, colIndex)}
+                      />
+                    </td>
+                  ))}
+                </tr>
+              )
           ))}
         </tbody>
       </table>

@@ -8,7 +8,7 @@ datasource db {
 }
 
 model property {
-  id                 String @id @default(auto()) @map("_id") @db.ObjectId
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
   building_name      String
   asset_type         String
   investment_size    String
@@ -17,11 +17,18 @@ model property {
   irr                Float
   multiplier         Float
   minimum_investment String
-  location String
-  tenant String
-  overview String
-  floorplan Json
-  tenant_details Json
-  images String[]
-  tables Json
+  location           String
+  tenant             String
+  overview           String
+  floorplan          Json
+  tenant_details     Json
+  images             String[]
+  tables             Json
+}
+
+model user {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  phone    String @unique
+  password String
 }

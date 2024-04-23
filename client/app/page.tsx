@@ -29,7 +29,6 @@ export default function Home() {
   }, [editorState]);
 
   function createMarkup(html: string | Node) {
-    console.log(html)
     return {
       __html: DOMPurify.sanitize(html)
     }
@@ -64,7 +63,7 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <div className="">
+      <div className="overflow-x-auto">
         <MyTable TableData={HandleTableData}/>
       </div>
       <br />
