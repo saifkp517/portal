@@ -1,6 +1,6 @@
 "use client"
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -21,7 +21,7 @@ ChartJS.register(
   Legend
 );
 
-export const options = {
+export const options: any = {
   responsive: true,
   plugins: {
     legend: {
@@ -29,34 +29,60 @@ export const options = {
     },
     title: {
       display: true,
-      text: 'Chart.js Bar Chart',
+      color: 'black',
+      text: 'Rental Yeild Growth',
+      padding: 20,
+      fullSize: true,
+      font: {
+        weight: 'bold',
+        size: 24
+      }
     },
   },
 };
 
-const labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
+export default function MyChart({onDataUpdate}: any) {
 
-export const data = {
-  labels,
+  const [chartData, setchartData] = useState({
+    labels: [],
+    values: []
+  })
+
+  const handleChange = (e: any) => {
+    const {name, value} = e.target;
+    setchartData({
+      ...chartData,
+      [name]: value.split(',')
+    })
+    onDataUpdate(chartData)
+  }
+
+ const data = {
+  labels: chartData.labels,
   datasets: [
     {
-      label: 'Dataset 1',
-      data: [4, 3,2,4,3,2,4],
-      backgroundColor: 'rgba(255, 99, 132, 0.5)',
-    },
-    {
-      label: 'Dataset 2',
-      data: [4, 3,2,4,3,2,4],
-      backgroundColor: 'rgba(53, 162, 235, 0.5)',
+      label: 'Growth Yeild',
+      data: chartData.values.map(value => parseInt(value)),
+      backgroundColor: '#50C878',
+      barPercentage: 0.5,
     },
   ],
 };
-export default function MyChart() {
-    return (
 
-        <div className="">
-            this is a chart
-            <Bar options={options} data={data} />;
+  return (
+
+    <div className="text-black max-w-screen-lg  mx-auto">
+      <div className="grid gap-y-6">
+        <div className="relative z-0 w-1/2 mx-auto  mb-0 group">
+          <input value={chartData.labels.join(',')} name="labels" onChange={handleChange} type="text" className="block py-3.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-600 appearance-none  focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+          <label className="peer-focus:font-medium absolute text-sm text-gray-500  duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600  peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Labels</label>
         </div>
-    );
+        <div className="relative z-0 w-1/2 mx-auto  mb-0 group">
+          <input value={chartData.values.join(',')} name="values" onChange={handleChange} type="text" className="block py-3.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-600 appearance-none  focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+          <label className="peer-focus:font-medium absolute text-sm text-gray-500  duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600  peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Values</label>
+        </div>
+      </div>
+      <Bar options={options} data={data} />;
+    </div>
+  );
 }

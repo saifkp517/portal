@@ -1,6 +1,2 @@
 ###
-POST http://localhost:8080/signup
-Content-Type: application/json
-{
-    "phoneno": ""
-}
+get http://localhost:8080/test
