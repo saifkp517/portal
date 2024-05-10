@@ -1,7 +1,8 @@
 "use client"
 
 import Head from 'next/head'
-import React, { useState, useEffect, FormEvent } from 'react';
+import Image from 'next/image';
+import React, { useState, ChangeEvent, FormEvent } from 'react';
 import MyTable from './components/Table';
 import { Editor } from "@tinymce/tinymce-react";
 import axios from 'axios'
@@ -16,6 +17,7 @@ export default function Home() {
   }
 
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [chartData, setChartData] = useState<chartInterface | null>(null)
   const receiveChartData = (data: chartInterface) => {
     setChartData(data);
@@ -24,6 +26,42 @@ export default function Home() {
   const toggleComponent = () => {
     setCurrentIndex((currentIndex + 1) % components.length);
   };
+
+
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (files) {
+      const newImagesArray: string[] = Array.from(files).map((file) => URL.createObjectURL(file));
+      setSelectedImages(prevImages => [...prevImages, ...newImagesArray]);
+      console.log()
+    }
+  }
+
+  const handleUpload = async () => {
+    const formData = new FormData();
+    selectedImages.forEach((image, index) => {
+      formData.append(`image-${index}`, image);
+    })
+
+    try {
+      const response = await fetch('/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        alert('Images uploaded successfully!');
+        // Optionally, perform any additional actions after successful upload
+      } else {
+        alert('Error uploading images');
+      }
+    }
+    catch (error) {
+      console.error('Error uploading images:', error);
+      alert('Error uploading images');
+    }
+
+  }
 
   const components = [
     <div className="overflow-x-auto">
@@ -164,11 +202,25 @@ export default function Home() {
             <textarea name="overview" value={formValues.overview} onChange={handleChange} className="shadow-sm bg-gray-50 border border-gray-500 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder=" " required />
 
           </div>
-          <div className="relative z-0 w-full mb-8 group h-48">
+          <div className="relative z-0 w-full mb-8 group">
             <label className="block mb-2 text-sm font-medium text-gray-900">Property Visuals</label>
-            <input name="overview" type='file' value={formValues.overview} onChange={handleChange} className="shadow-sm bg-gray-50 border border-gray-500 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full h-4/6 p-2.5" placeholder=" " required />
-
+            <input name="overview" type='file' onChange={handleImageChange} multiple className="shadow-sm bg-gray-50 border border-gray-500 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full h-4/6 p-2.5" placeholder=" " required />
           </div>
+          <div className="relative z-0 w-full mb-8 group border-2 h-1/2 border-gray-700 rounded-md">
+
+            {selectedImages.map((image, index) => (
+              <div className='flex' key={index}>
+                <Image
+                  src={image}
+                  className='object-cover h-1/2 w-1/2 rounded-lg m-3'
+                  alt={`Image ${index}`}
+                  width={500} // Adjust as needed
+                  height={200} // Adjust as needed
+                />
+              </div>
+            ))}
+          </div>
+
 
           <button type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center  ">Submit</button>
         </form>

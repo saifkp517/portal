@@ -6,7 +6,8 @@ import { PrismaClient } from "@prisma/client";
 import cookieParser from "cookie-parser";
 import * as jwt from "jsonwebtoken";
 import bodyParser from "body-parser";
-import { data } from "./client/app/components/Chart";
+import multer from "multer";
+
 
 const cors = require('cors')
 
@@ -52,6 +53,8 @@ app.post('/createproperty', async (req, res) => {
     console.log(e)
   }
 })
+
+//////////////////////////////////Authentication handlers below//////////////////////////////////////////////
 
 //signup
 app.post('/signup', async (req, res) => {
@@ -159,6 +162,41 @@ const userAuth = (req: Request , res: Response, next: NextFunction) => {
   });
 }
 
+//////////////////////////////////Authentication handlers above//////////////////////////////////////////////
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, './uploads');
+  },
+  filename: (req, file, cb) => {
+    const fileName = file.originalname.toLowerCase().split(' ').join('_');
+    cb(null, fileName);
+  }
+})
+
+const isImage = (file: Express.Multer.File): boolean => {
+  const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif'];
+  return allowedMimeTypes.includes(file.mimetype);
+};
+
+const fileFilter = (req: Request, file: Express.Multer.File, cb: any): void => {
+  if (isImage(file)) {
+    cb(null, true); // Accept the file
+  } else {
+    cb(new Error('Only image files are allowed!')); // Reject the file
+  }
+}
+
+const upload = multer({
+  dest: 'uploads/',
+  fileFilter: fileFilter,
+  limits: { fileSize: 10 * 1024 * 1024 } // limit file size upto 10mb
+})
+
+app.post('/photos/upload', upload.array('photos', 10), (req, res, next) => {
+  
+})
+
 app.post('/test', userAuth ,(req, res) => {
   res.send('test');
 })
@@ -166,3 +204,4 @@ app.post('/test', userAuth ,(req, res) => {
 app.listen(port, () => {
   console.log(`Listening on port ${port}...`);
 });
+

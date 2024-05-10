@@ -11,6 +11,11 @@ export default function MyTable({ TableData }: any) {
 
   // functions related to generate hover-grid selector --
 
+  const handleGenerateTable = () => {
+    const data = Array.from({ length: numRows+1 }, () => Array.from({ length: numCols+1 }, () => ''));
+    setTableData(data)
+  };
+
   const handleBoxHover = (row: number, col: number) => {
     setNumRows(row);
     setNumCols(col);
@@ -18,15 +23,16 @@ export default function MyTable({ TableData }: any) {
 
   const renderGrid = () => {
     const grid = [];
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 10; i++) {
       const row = [];
-      for (let j = 0; j < 5; j++) {
+      for (let j = 0; j < 10; j++) {
         const index = i * 5 + j;
         row.push(
           <div
             key={index}
-            className={`border border-black h-4 w-4 m-1 ${i <= numRows && j <= numCols ? 'bg-gray-500 border-transparent' : ''}`}
+            className={`border border-black h-4 w-4 m-0.5 rounded-sm ${i <= numRows && j <= numCols ? 'bg-gray-500 border-transparent' : ''}`}
             onMouseEnter={() => handleBoxHover(i , j)}
+            onClick={handleGenerateTable}
           >
             <div className=""></div>
           </div>
@@ -41,6 +47,7 @@ export default function MyTable({ TableData }: any) {
     return grid;
   };
 
+  
 
   // -- functions related to generate hover-grid selector 
 
@@ -48,26 +55,12 @@ export default function MyTable({ TableData }: any) {
 
   // functions related to generate table functionality ----
 
-  const handleNumRowsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value);
-    setNumRows(isNaN(value) ? 0 : value);
-  };
-
-  const handleNumColsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value);
-    setNumCols(isNaN(value) ? 0 : value);
-  };
-
-  const handleGenerateTable = () => {
-    const data = Array.from({ length: numRows }, () => Array.from({ length: numCols }, () => ''));
-    setTableData(data)
-  };
 
   const handleCellChange = (e: React.ChangeEvent<HTMLInputElement>, rowIndex: number, colIndex: number) => {
     const updatedData = [...tableData];
     updatedData[rowIndex][colIndex] = e.target.value;
-    setTableData(updatedData);
-    TableData(tableData)
+    setTableData(updatedData); //sets the data in the table array
+    TableData(tableData); //sends the set data to the parent component
   };
 
 
@@ -76,7 +69,7 @@ export default function MyTable({ TableData }: any) {
 
   const renderTable = () => {
     return (
-      <table>
+      <table className="table-fixed">
         <tbody>
           {tableData.map((row: any, rowIndex: number) => (
             rowIndex == 0 ? (
@@ -125,15 +118,14 @@ export default function MyTable({ TableData }: any) {
       <br /> */}
 
       <div className="">
+      Rows: {numRows+1}, Columns: {numCols+1}
+
         <div className="w-full my-8">{renderGrid()}</div>
         <div className="info">
           Hover over the boxes to select the number of rows and columns for the table.
           <br />
-          Rows: {numRows}, Columns: {numCols}
         </div>
       </div>
-
-      <button className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center mt-4" onClick={handleGenerateTable}>Generate Table</button>
 
       {tableData.length > 0 && renderTable()}
     </div>
