@@ -8,7 +8,7 @@ datasource db {
 }
 
 model property {
-  id                 String   @id @default(uuid())
+  id                 String  @id @default(uuid())
   building_name      String
   asset_type         String
   investment_size    String
@@ -23,6 +23,7 @@ model property {
   floorplan          Json?
   tenant_details     Json?
   images             String?
+  tables             Json?
   additional         Json?
 }
 

@@ -22,7 +22,7 @@ var corsOptions = {
 
 app.use(cookieParser());
 app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({extended: true}))
+app.use(bodyParser.urlencoded({ extended: true }))
 app.use(cors(corsOptions))
 
 const user = {
@@ -33,26 +33,6 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.post('/createproperty', async (req, res) => {
-  try {
-
-
-    const property = await prisma.property.create({
-      data: req.body
-    })
-
-    if(property) {
-      return res.status(200).json({
-        message: "Property successfully uploaded",
-        success: true
-      })
-    }
-  }
-  catch(e)
-  {
-    console.log(e)
-  }
-})
 
 //////////////////////////////////Authentication handlers below//////////////////////////////////////////////
 
@@ -62,7 +42,7 @@ app.post('/signup', async (req, res) => {
   const { name, phone, password, email } = req.body;
 
   try {
-    const user = await prisma.user.findUnique({where: {phone: phone}})
+    const user = await prisma.user.findUnique({ where: { phone: phone } })
 
     if (!user) {
       const hash = hashSync(password, genSaltSync(10));
@@ -100,7 +80,7 @@ app.post('/signin', async (req, res) => {
   const { phone, password } = req.body;
 
   try {
-    const user = await prisma.user.findUnique({where: {phone: phone}})
+    const user = await prisma.user.findUnique({ where: { phone: phone } })
 
     if (!user) {
       return res.status(404).json({
@@ -111,8 +91,7 @@ app.post('/signin', async (req, res) => {
 
     let passwordMatch = compareSync(password, user.password);
 
-    if(passwordMatch)
-    {
+    if (passwordMatch) {
       let token = jwt.sign(
         {
           name: user.name,
@@ -120,7 +99,7 @@ app.post('/signin', async (req, res) => {
           email: user.email
         },
         'Secret',
-        {expiresIn: "3 days"}
+        { expiresIn: "3 days" }
       )
 
       let result = {
@@ -135,8 +114,7 @@ app.post('/signin', async (req, res) => {
         message: "Successfully Logged In!"
       })
     }
-    else
-    {
+    else {
       return res.status(401).json({
         message: "Invalid Credentials!",
         success: false
@@ -149,7 +127,7 @@ app.post('/signin', async (req, res) => {
 })
 
 //middleware to authorize users by role
-const userAuth = (req: Request , res: Response, next: NextFunction) => {
+const userAuth = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers["authorization"];
   if (!authHeader) return res.sendStatus(403);
   const token = authHeader.split(" ")[1];
@@ -166,7 +144,7 @@ const userAuth = (req: Request , res: Response, next: NextFunction) => {
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, './uploads');
+    cb(null, './uploads/');
   },
   filename: (req, file, cb) => {
     const fileName = file.originalname.toLowerCase().split(' ').join('_');
@@ -188,16 +166,75 @@ const fileFilter = (req: Request, file: Express.Multer.File, cb: any): void => {
 }
 
 const upload = multer({
-  dest: 'uploads/',
+  storage: storage,
   fileFilter: fileFilter,
-  limits: { fileSize: 10 * 1024 * 1024 } // limit file size upto 10mb
 })
 
-app.post('/photos/upload', upload.array('photos', 10), (req, res, next) => {
-  
+app.post('/photos/upload', upload.any(), async (req, res, next) => {
+
+  const files = (req as any).files;
+
+  return res.status(200).json({ message: 'Files uploaded successfully', files: files });
 })
 
-app.post('/test', userAuth ,(req, res) => {
+app.post('/createproperty', async (req, res) => {
+  try {
+
+    const {
+      building_name,
+      asset_type,
+      investment_size,
+      lockin,
+      entry_yeild,
+      irr,
+      multiplier,
+      minimum_investment,
+      location,
+      tenant,
+      overview,
+      floorplan,
+      tenant_details,
+      additional
+    } = req.body;
+
+    console.log(req.files);
+    const property = await prisma.property.create({
+      data: {
+        building_name,
+        asset_type,
+        investment_size,
+        lockin,
+        entry_yeild,
+        irr,
+        multiplier,
+        minimum_investment,
+        location,
+        tenant,
+        overview,
+        floorplan: floorplan ? JSON.parse(floorplan) : null,
+        tenant_details: tenant_details ? JSON.parse(tenant_details) : null,
+        // images: images.length > 0 ? images : [],
+        additional: additional ? additional : null
+      }
+    })
+
+    if (property) {
+      return res.status(200).json({
+        message: "Property successfully uploaded",
+        success: true
+      })
+    }
+  }
+  catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false
+    });
+  }
+})
+
+app.post('/test', userAuth, (req, res) => {
   res.send('test');
 })
 
