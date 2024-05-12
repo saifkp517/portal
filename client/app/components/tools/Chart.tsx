@@ -63,7 +63,7 @@ export default function MyChart({onDataUpdate}: any) {
     {
       label: 'Growth Yeild',
       data: chartData.values.map(value => parseInt(value)),
-      backgroundColor: '#50C878',
+      backgroundColor:  ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#00BFFF', '#FFD700', '#32CD32', '#8A2BE2'],
       barPercentage: 0.5,
     },
   ],
