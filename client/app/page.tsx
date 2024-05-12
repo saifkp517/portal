@@ -23,18 +23,7 @@ export default function Home() {
       {/* <!-- Navigation --> */}
       <nav className="bg-gray-900 p-6 fixed w-full z-10 top-0">
         <div className="text-white container mx-auto flex justify-between items-center">
-          {
-            user ?
-              (
-                <div className="block">
-                  <h2>{user.name}</h2>
-                  <p>{user.email}</p>
-                </div>
-              )
-              :
-              ' '
-          }
-
+         
           <div className="flex items-center">
             <a className="text-lg text-white font-semibold" href="#">PropertyVerse</a>
           </div>
