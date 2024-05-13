@@ -106,7 +106,7 @@ export default function SideNav({ sendChangedComponent }: any) {
                                     {/* Add user profile picture */}
                                     <img
                                         className="w-10 h-10 rounded-full"
-                                        src="https://via.placeholder.com/50"
+                                        src={'https://via.placeholder.com/50'}
                                         alt="User profile"
                                     />
                                     {/* Add user name and email */}

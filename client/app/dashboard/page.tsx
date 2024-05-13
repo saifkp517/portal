@@ -8,7 +8,8 @@ import { Editor } from "@tinymce/tinymce-react";
 import axios from 'axios'
 import MyChart from '../components/tools/Chart';
 import SideNav from '../components/SideNav';
-import PropertyUpload from '../components/PropertyUpload';
+import PropertyUpload from '../components/sections/PropertyUpload';
+import InterestedUsers from '../components/sections/InterestedUsers';
 
 export default function Home() {
 
@@ -23,7 +24,7 @@ export default function Home() {
       <SideNav sendChangedComponent={handleActiveComponent} />
       <div className="p-8 sm:ml-64 bg-gray-200">
           {activeComponent === 'upload' && <PropertyUpload />}
-          {activeComponent === 'properties' && <PropertyUpload />}
+          {activeComponent === 'users' && <InterestedUsers />}
       </div>
     </div>
   );

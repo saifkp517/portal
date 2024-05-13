@@ -3,12 +3,11 @@
 import Head from 'next/head'
 import Image from 'next/image';
 import React, { useState, ChangeEvent, FormEvent } from 'react';
-import MyTable from './tools/Table';
+import MyTable from '../tools/Table';
 import { Editor } from "@tinymce/tinymce-react";
 import { Bar } from 'react-chartjs-2';
 import axios from 'axios'
-import MyChart from './tools/Chart';
-import Preview from './Preview';
+import MyChart from '../tools/Chart';
 
 export default function PropertyUpload() {
 
@@ -18,6 +17,8 @@ export default function PropertyUpload() {
   }
 
   const [currentIndex, setCurrentIndex] = useState(0);
+  let [tableIndex, setTableIndex] = useState(0);
+  let [chartIndex, setChartIndex] = useState(0);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [uploadImages, setUploadImages] = useState<FormData>(new FormData());
   const [chartData, setChartData] = useState<chartInterface | null>(null)
@@ -27,29 +28,7 @@ export default function PropertyUpload() {
   const [inputType, setinputType] = useState("");
   const [additionalInfo, setAdditionalInfo] = useState({});
 
-  interface AdditionalData {
-    chart?: any;
-    table?: any;
-  }
-
-  type FormValues = {
-    building_name: string;
-    asset_type: string;
-    investment_size: string;
-    lockin: string;
-    entry_yeild: string;
-    irr: string;
-    multiplier: string;
-    minimum_investment: string;
-    location: string;
-    tenant: string;
-    overview: string;
-    additional: AdditionalData;
-    images: any[]; // Adjust the type for images if needed
-  };
-
-
-  const [formValues, setFormValues] = useState<FormValues>({
+  const [formValues, setFormValues] = useState<any>({
     building_name: '',
     asset_type: '',
     investment_size: '',
@@ -62,10 +41,7 @@ export default function PropertyUpload() {
     tenant: '',
     overview: '',
     additional: {},
-    // floorplan: {},
-    // tenant_details: {},
     images: [],
-    // tables: {}
   })
 
   function handleChange(evt: any) {
@@ -156,13 +132,14 @@ export default function PropertyUpload() {
   }
 
   function appendData() {
-    setFormValues(prevState => ({
+    setFormValues((prevState: any) => ({
       ...prevState,
       additional: {
         ...prevState.additional,
-        [currentIndex == 0 ? 'table' : 'chart']: currentIndex == 0 ? tableData : chartData
+        [currentIndex == 0 ? `table-${tableIndex}` : `chart-${chartIndex}`]: currentIndex == 0 ? tableData : chartData
       }
     }))
+    currentIndex == 0 ? setTableIndex(tableIndex + 1) : setChartIndex(chartIndex + 1)
 
   }
 
@@ -214,6 +191,14 @@ export default function PropertyUpload() {
 
 
               </div>
+
+              <div className="relative z-0 w-full mb-0 group">
+                <label className="block mb-2 text-sm font-medium text-gray-900">Gross Entry Yeild</label>
+                <input name="entry_yeild" value={formValues.entry_yeild} onChange={handleChange} type="text" className="shadow-sm  border border-gray-500 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 " placeholder=" " required />
+
+
+              </div>
+
               <div className="relative z-0 w-full mb-0 group">
                 <label className="block mb-2 text-sm font-medium text-gray-900">Multiplier</label>
                 <input name="multiplier" value={formValues.multiplier} onChange={handleChange} type="text" className="shadow-sm  border border-gray-500 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 " placeholder=" " required />
@@ -240,7 +225,7 @@ export default function PropertyUpload() {
               </div>
             </div>
             <div className="relative z-0 w-full mb-8 group">
-              <label className="block mb-2 text-sm font-medium text-gray-900">Building Name</label>
+              <label className="block mb-2 text-sm font-medium text-gray-900"></label>
               <textarea name="overview" value={formValues.overview} onChange={handleChange} className="shadow-sm  border border-gray-500 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder=" " required />
 
             </div>
@@ -277,7 +262,7 @@ export default function PropertyUpload() {
 
 
         </div>
-        <div className="border h-screen bg-white lg:h-5/6 border-black shadow-[inset_0_6px_10px_rgba(0,0,0,0.3)] rounded-lg m-10 p-3">
+        <div className="border h-screen overflow-y-auto bg-white lg:h-5/6 border-black shadow-[inset_0_6px_10px_rgba(0,0,0,0.3)] rounded-lg m-10 p-3">
           <h1 className=' tracking-tight roboto-regular'>Content Preview</h1>
           <br />
 
@@ -291,15 +276,15 @@ export default function PropertyUpload() {
               </div>
               <div className="">
                 <h1 className="text-md lg:text-sm  font-bold text-center text-gray-600">Asset Type</h1>
-                <p className="text-lg lg:text-sm font-bold text-center text-blue-500">{formValues.asset_type}</p>
+                <p className="text-lg lg:text-sm font-bold text-center text-blue-500">"{formValues.asset_type}"</p>
               </div>
               <div className="">
-                <h1 className="text-md lg:text-sm  font-bold text-center text-gray-600">Investment Floor</h1>
-                <p className="text-lg lg:text-sm font-bold text-center text-blue-500">{formValues.investment_size}</p>
+                <h1 className="text-md lg:text-sm  font-bold text-center text-gray-600">Investment Size</h1>
+                <p className="text-lg lg:text-sm font-bold text-center text-blue-500">{formValues.investment_size} sq.ft</p>
               </div>
               <div className="">
                 <h1 className="text-md lg:text-sm  font-bold text-center text-gray-600">Lease Lock-in</h1>
-                <p className="text-lg lg:text-sm font-bold text-center text-blue-500">{formValues.lockin}</p>
+                <p className="text-lg lg:text-sm font-bold text-center text-blue-500">"{formValues.lockin}"</p>
               </div>
               <div className="">
                 <h1 className="text-md lg:text-sm  font-bold text-center text-gray-600">Gross Entry Yield</h1>
@@ -338,45 +323,97 @@ export default function PropertyUpload() {
 
               </div>
             </div>
-            <div className="chart">
+            <div className="chart p-4">
               {
-                formValues.additional.chart ?
-                  <Bar
-                    options={{
-                      responsive: true,
-                      plugins: {
-                        legend: {
-                          position: 'top' as const,
-                        },
-                        title: {
-                          display: true,
-                          color: 'black',
-                          text: 'Rental Yeild Growth',
-                          padding: 10,
-                          fullSize: true,
-                          font: {
-                            weight: 'bold',
-                            size: 24
-                          }
-                        },
-                      },
-                    }}
-                    data={{
-                      labels: formValues.additional.chart.labels,
-                      datasets: [
-                        {
-                          label: 'Growth Yeild',
-                          data: formValues.additional.chart.values.map((value: any) => parseInt(value)),
-                          backgroundColor: ['#50C878', '#228B22'],
-                          barPercentage: 0.5,
-                        },
-                      ],
-                    }}
-                  />
-                  :
-                  "jeasd"
+                Object.keys(formValues.additional).map(key => {
+                  if (key.startsWith("chart-")) {
+                    const chartData = formValues.additional[key];
+                    if (chartData && chartData.labels && chartData.values) {
+                      return (
+                        <Bar
+                          key={key} // Make sure to set a unique key for each chart
+                          options={{
+                            responsive: true,
+                            plugins: {
+                              legend: {
+                                position: 'top' as const,
+                              },
+                              title: {
+                                display: true,
+                                color: 'black',
+                                text: 'Rental Yield Growth',
+                                padding: 10,
+                                fullSize: true,
+                                font: {
+                                  weight: 'bold',
+                                  size: 24
+                                }
+                              },
+                            },
+                          }}
+                          data={{
+                            labels: chartData.labels,
+                            datasets: [
+                              {
+                                label: 'Growth Yield',
+                                data: chartData.values.map((value: any) => parseInt(value)),
+                                backgroundColor: ['#50C878', '#228B22'],
+                                barPercentage: 0.5,
+                              },
+                            ],
+                          }}
+                        />
+                      );
+                    }
+                  }
+                  else if (key.startsWith("table-")) {
+                    const tableData = formValues.additional[key];
+                    if (tableData) {
+                      return (
+                        <div className="my-4 overflow-auto">
+                          <table className="table-fixed rounded-lg border-collapse bg-white">
+                            <tbody>
+                              {tableData.map((row: any, rowIndex: number) => (
+                                rowIndex == 0 ? (
+                                  <tr key={rowIndex}>
+                                    {row.map((cell: any, colIndex: number) => (
+                                      <th className="border border-black bg-green-500 text-white px-4 py-2" key={colIndex}>
+                                        <input
+                                          type="text"
+                                          className="bg-transparent border-none w-full text-center"
+                                          value={cell}
+                                        />
+                                      </th>
+                                    ))}
+                                  </tr>
+                                )
+                                  :
+                                  (
+                                    <tr key={rowIndex}>
+                                      {row.map((cell: any, colIndex: number) => (
+                                        <td className="border border-black px-4 py-2" key={colIndex}>
+                                          <input
+                                            type="text"
+                                            className="bg-transparent border-none w-full text-center"
+                                            value={cell}
+                                          />
+                                        </td>
+                                      ))}
+                                    </tr>
+                                  )
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      );
+                    }
+
+                  }
+                  return null; // Return null if chart data is not available
+                })
               }
             </div>
+
           </div>
 
 
