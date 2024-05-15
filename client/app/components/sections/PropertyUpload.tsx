@@ -99,6 +99,19 @@ export default function PropertyUpload() {
       console.log("Response" + response);
 
       console.log('Upload successful:', response.data);
+
+      const imagePaths: any = [];
+
+      response.data.files.map((file: any) => {
+        imagePaths.push(file.path);
+      })
+
+      setFormValues((prevValues: any) => ({
+        ...prevValues,
+        images: imagePaths
+      }))
+
+
       return { success: true, data: response.data }; // Return success
     } catch (error) {
       console.error('Error uploading:', error);
@@ -115,6 +128,7 @@ export default function PropertyUpload() {
 
     const uploadResponse = await handleUpload();
     if (uploadResponse.success) {
+      console.log(formValues)
       axios.post('http://localhost:8080/createproperty', {
         ...formValues
       })
