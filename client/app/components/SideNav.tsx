@@ -1,7 +1,6 @@
 "use client"
 
 import Head from 'next/head'
-import { useUser } from '@auth0/nextjs-auth0/client';
 import Image from 'next/image';
 import React, { useState, } from 'react';
 
@@ -11,7 +10,6 @@ export default function SideNav({ sendChangedComponent }: any) {
     const [activeComponent, setActiveComponent] = useState('upload');
     const [isOpen, setIsOpen] = useState(true);
 
-    const { user, error, isLoading } = useUser();
 
     const handleItemClick = (componentName: string) => {
         setActiveComponent(componentName);
@@ -99,24 +97,23 @@ export default function SideNav({ sendChangedComponent }: any) {
                                 <span className="flex-1 ms-3 whitespace-nowrap">Log Out</span>
                             </a>
                         </li>
-                        <li className=" absolute bottom-0"> {/* This pushes the user profile section to the bottom */}
-                            {/* User profile section */}
+                        
+                        {/* <li className=" absolute bottom-0">
+                            
                             <div className="p-4 border-t dark:border-gray-600">
                                 <div className="flex items-center space-x-2">
-                                    {/* Add user profile picture */}
                                     <img
                                         className="w-10 h-10 rounded-full"
                                         src={'https://via.placeholder.com/50'}
                                         alt="User profile"
                                     />
-                                    {/* Add user name and email */}
                                     <div>
                                         <p className="text-sm text-gray-600">{user ? user.name : null}</p>
                                         <p className="text-xs text-gray-500 line-clamp-1">{user ? user.email : null}</p>
                                     </div>
                                 </div>
                             </div>
-                        </li>
+                        </li> */}
                     </ul>
                 </div>
             </aside>

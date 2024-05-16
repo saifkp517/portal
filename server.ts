@@ -36,13 +36,13 @@ app.get("/", (req, res) => {
 
 //////////////////////////////////Authentication handlers below//////////////////////////////////////////////
 
-//signup
-app.post('/signup', async (req, res) => {
+//signup for channel partners
+app.post('/signup/partner', async (req, res) => {
 
   const { name, phone, password, email } = req.body;
 
   try {
-    const user = await prisma.user.findUnique({ where: { phone: phone } })
+    const user = await prisma.user.findUnique({ where: { email: email } })
 
     if (!user) {
       const hash = hashSync(password, genSaltSync(10));
@@ -52,7 +52,8 @@ app.post('/signup', async (req, res) => {
           name: name,
           phone: phone,
           password: hash,
-          email: email
+          email: email,
+          role: "PARTNER"
         }
       })
 
@@ -76,11 +77,103 @@ app.post('/signup', async (req, res) => {
 
 
 //signin
-app.post('/signin', async (req, res) => {
-  const { phone, password } = req.body;
+app.post('/signin/partner', async (req, res) => {
+  const { email, password } = req.body;
 
   try {
-    const user = await prisma.user.findUnique({ where: { phone: phone } })
+    const user = await prisma.user.findUnique({ where: { email: email } })
+
+    if (!user) {
+      return res.status(404).json({
+        message: "Account with this Phone Number does not exist!",
+        success: false
+      })
+    }
+
+    let passwordMatch = compareSync(password, user.password);
+
+    if (passwordMatch) {
+      let token = jwt.sign(
+        {
+          name: user.name,
+          phone: user.phone,
+          email: user.email
+        },
+        'Secret',
+        { expiresIn: "3 days" }
+      )
+
+      let result = {
+        name: user.name,
+        phone: user.phone,
+        email: user.email,
+        token: `Bearer ${token}`
+      }
+
+      return res.status(200).json({
+        ...result,
+        message: "Successfully Logged In!"
+      })
+    }
+    else {
+      return res.status(401).json({
+        message: "Invalid Credentials!",
+        success: false
+      })
+    }
+
+
+  }
+  catch (e) { console.log(e) }
+})
+
+
+//signup for administrators
+app.post('/signup/admin', async (req, res) => {
+
+  const { name, phone, password, email } = req.body;
+
+  try {
+    const user = await prisma.user.findUnique({ where: { email: email } })
+
+    if (!user) {
+      const hash = hashSync(password, genSaltSync(10));
+
+      const newUser = await prisma.user.create({
+        data: {
+          name: name,
+          phone: phone,
+          password: hash,
+          email: email,
+          role: "ADMIN"
+        }
+      })
+
+      if (newUser) {
+        return res.status(200).json({
+          message: "User successfully Signed Up!",
+          success: true
+        })
+      }
+    }
+
+    return res.json({
+      message: "Account with this Phone Number exists!",
+      success: false
+    })
+  }
+  catch (e) {
+    console.log(e);
+  }
+})
+
+
+//signin
+app.post('/signin/admin', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await prisma.user.findUnique({ where: { email: email } })
 
     if (!user) {
       return res.status(404).json({
@@ -194,7 +287,9 @@ app.post('/createproperty', async (req, res) => {
       overview,
       floorplan,
       tenant_details,
-      additional
+      images,
+      additional,
+      user
     } = req.body;
 
     console.log(req.files);
@@ -213,8 +308,9 @@ app.post('/createproperty', async (req, res) => {
         overview,
         floorplan: floorplan ? JSON.parse(floorplan) : null,
         tenant_details: tenant_details ? JSON.parse(tenant_details) : null,
-        // images: images.length > 0 ? images : [],
-        additional: additional ? additional : null
+        images: images.length > 0 ? images : [],
+        additional: additional ? additional : null,
+        user
       }
     })
 
@@ -234,7 +330,7 @@ app.post('/createproperty', async (req, res) => {
   }
 })
 
-app.post('/test', userAuth, (req, res) => {
+app.get('/test', userAuth, (req, res) => {
   res.send('test');
 })
 

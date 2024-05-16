@@ -1,2 +1,11 @@
 ###
-get http://localhost:8080/test
+
+post http://localhost:8080/signin
+Content-Type: application/json
+
+{
+    "name": "asdads",
+    "phone": "1",
+    "password": "p",
+    "email": "asd"
+}

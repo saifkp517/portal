@@ -8,7 +8,7 @@ datasource db {
 }
 
 model property {
-  id                 String  @id @default(uuid())
+  id                 String   @id @default(uuid())
   building_name      String
   asset_type         String
   investment_size    String
@@ -22,15 +22,24 @@ model property {
   overview           String
   floorplan          Json?
   tenant_details     Json?
-  images             String?
+  images             String[]
   tables             Json?
   additional         Json?
+  user               user     @relation(fields: [userId], references: [id])
+  userId             String
+}
+
+enum Role {
+  PARTNER
+  ADMIN
 }
 
 model user {
-  id       String  @id @default(uuid())
-  name     String?
-  email    String  @unique
-  phone    String  @unique
-  password String
+  id         String     @id @default(uuid())
+  name       String?
+  phone      String?
+  email      String     @unique
+  password   String
+  role       Role
+  properties property[]
 }
