@@ -8,7 +8,6 @@ import * as jwt from "jsonwebtoken";
 import bodyParser from "body-parser";
 import multer from "multer";
 
-
 const cors = require('cors')
 
 const app = express();
@@ -50,7 +49,6 @@ app.post('/signup/partner', async (req, res) => {
       const newUser = await prisma.user.create({
         data: {
           name: name,
-          phone: phone,
           password: hash,
           email: email,
           role: "PARTNER"
@@ -96,7 +94,6 @@ app.post('/signin/partner', async (req, res) => {
       let token = jwt.sign(
         {
           name: user.name,
-          phone: user.phone,
           email: user.email
         },
         'Secret',
@@ -105,7 +102,6 @@ app.post('/signin/partner', async (req, res) => {
 
       let result = {
         name: user.name,
-        phone: user.phone,
         email: user.email,
         token: `Bearer ${token}`
       }
@@ -142,7 +138,6 @@ app.post('/signup/admin', async (req, res) => {
       const newUser = await prisma.user.create({
         data: {
           name: name,
-          phone: phone,
           password: hash,
           email: email,
           role: "ADMIN"
@@ -188,7 +183,6 @@ app.post('/signin/admin', async (req, res) => {
       let token = jwt.sign(
         {
           name: user.name,
-          phone: user.phone,
           email: user.email
         },
         'Secret',
@@ -197,7 +191,6 @@ app.post('/signin/admin', async (req, res) => {
 
       let result = {
         name: user.name,
-        phone: user.phone,
         email: user.email,
         token: `Bearer ${token}`
       }
@@ -270,6 +263,8 @@ app.post('/photos/upload', upload.any(), async (req, res, next) => {
   return res.status(200).json({ message: 'Files uploaded successfully', files: files });
 })
 
+/////////////////////////////////////////////property CRUD//////////////////////////////////////////
+
 app.post('/createproperty', async (req, res) => {
   try {
 
@@ -289,7 +284,7 @@ app.post('/createproperty', async (req, res) => {
       tenant_details,
       images,
       additional,
-      user
+      userId
     } = req.body;
 
     console.log(req.files);
@@ -310,7 +305,7 @@ app.post('/createproperty', async (req, res) => {
         tenant_details: tenant_details ? JSON.parse(tenant_details) : null,
         images: images.length > 0 ? images : [],
         additional: additional ? additional : null,
-        user
+        userId
       }
     })
 
@@ -330,8 +325,29 @@ app.post('/createproperty', async (req, res) => {
   }
 })
 
-app.get('/test', userAuth, (req, res) => {
-  res.send('test');
+app.get('/properties', async (req, res) => {
+  try {
+    const properties = await prisma.property.findMany();
+    if (properties) {
+      return res.status(200).json({
+        properties: properties,
+        success: true
+      })
+    }
+  }
+  catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false
+    });
+  }
+})
+
+/////////////////////////////////////////////property CRUD//////////////////////////////////////////
+
+app.get('/authorize', userAuth, (req, res) => {
+  res.send('Authorized!');
 })
 
 app.listen(port, () => {

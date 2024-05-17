@@ -1,6 +1,5 @@
 "use client"
 import { useEffect, useState } from 'react';
-import { redirect } from 'next/navigation'
 import axios from 'axios';
 
 export default function Home() {
@@ -20,14 +19,22 @@ export default function Home() {
   // if (error) return <div>{error.message}</div>;
 
   useEffect(() => {
-    axios.get('http://localhost:8080/test').then(data => {
-      setLoggedIn(true);
+    const token = localStorage.getItem('token');
+    axios.get('http://localhost:8080/authorize', {
+      headers: {
+        "Authorization": `${token}`
+      }
     })
-      .catch(err => setLoggedIn(false))
+    .then(data => {
+      window.location.href = '/dashboard'
+    })
+      .catch(err => {
+        if(err.response.data === "Forbidden")
+          return;
+      })
   }, [])
 
-  if (loggedIn)
-    redirect('/dashboard');
+
 
   return (
 
@@ -109,7 +116,7 @@ export default function Home() {
         <div className="container mx-auto text-center">
           <h2 className="text-4xl font-semibold mb-4">Ready to Get Started?</h2>
           <p className="text-xl mb-8">Sign up now and revolutionize the way you analyze and visualize your data.</p>
-          <a href="/api/auth/login" className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-8 rounded-full">Sign Up</a>
+          <a href="/signin" className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-8 rounded-full">Sign Up</a>
         </div>
       </section>
 

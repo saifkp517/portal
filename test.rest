@@ -1,11 +1,10 @@
 ###
 
-post http://localhost:8080/signin
+post http://localhost:8080/signup
 Content-Type: application/json
 
 {
     "name": "asdads",
-    "phone": "1",
     "password": "p",
-    "email": "asd"
+    "email": "asdqwe",
 }

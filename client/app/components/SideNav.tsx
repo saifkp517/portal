@@ -2,10 +2,33 @@
 
 import Head from 'next/head'
 import Image from 'next/image';
-import React, { useState, } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 
 export default function SideNav({ sendChangedComponent }: any) {
+
+    const user = {
+        name: 'saif khan',
+        email: 'john@example.com'
+    };
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        axios.get('http://localhost:8080/authorize', {
+            headers: {
+                "Authorization": `${token}`
+            }
+        })
+            .then(data => {
+                return;
+            })
+            .catch(err => {
+                console.log(err)
+                if (err.response === "Forbidden")
+                    window.location.href = '/'
+            })
+    }, [])
 
     const [activeComponent, setActiveComponent] = useState('upload');
     const [isOpen, setIsOpen] = useState(true);
@@ -20,7 +43,10 @@ export default function SideNav({ sendChangedComponent }: any) {
         setIsOpen(!isOpen);
     };
 
-
+    const getRandomColor = () => {
+        const colors = ['#F87171', '#FBBF24', '#34D399', '#60A5FA', '#A78BFA', '#F472B6', '#6EE7B7'];
+        return colors[Math.floor(Math.random() * colors.length)];
+    };
 
     return (
 
@@ -56,7 +82,7 @@ export default function SideNav({ sendChangedComponent }: any) {
                         <li onClick={() => handleItemClick('upload')}>
                             <a href="#" className={` ${activeComponent === 'upload' ? 'bg-gray-700 border border-blue-400' : ''} flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group`}>
                                 <svg className=" flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75  group-hover:text-gray-900 " aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 16">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 8h11m0 0L8 4m4 4-4 4m4-11h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3" />
+                                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M1 8h11m0 0L8 4m4 4-4 4m4-11h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3" />
                                 </svg>
                                 <span className="flex-1 ms-3 whitespace-nowrap">Upload</span>
 
@@ -97,23 +123,23 @@ export default function SideNav({ sendChangedComponent }: any) {
                                 <span className="flex-1 ms-3 whitespace-nowrap">Log Out</span>
                             </a>
                         </li>
-                        
-                        {/* <li className=" absolute bottom-0">
-                            
+
+                        <li className="absolute bottom-0">
                             <div className="p-4 border-t dark:border-gray-600">
                                 <div className="flex items-center space-x-2">
-                                    <img
-                                        className="w-10 h-10 rounded-full"
-                                        src={'https://via.placeholder.com/50'}
-                                        alt="User profile"
-                                    />
+                                    <div
+                                        className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-300 text-gray-700 font-semibold"
+                                        style={{ backgroundColor: getRandomColor() }}
+                                    >
+                                        {user ? user.name.substring(0, 1).toUpperCase() : ''}
+                                    </div>
                                     <div>
                                         <p className="text-sm text-gray-600">{user ? user.name : null}</p>
                                         <p className="text-xs text-gray-500 line-clamp-1">{user ? user.email : null}</p>
                                     </div>
                                 </div>
                             </div>
-                        </li> */}
+                        </li>
                     </ul>
                 </div>
             </aside>

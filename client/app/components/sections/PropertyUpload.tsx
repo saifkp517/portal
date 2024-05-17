@@ -7,6 +7,7 @@ import MyTable from '../tools/Table';
 import { Editor } from "@tinymce/tinymce-react";
 import { Bar } from 'react-chartjs-2';
 import axios from 'axios'
+import {jwtDecode} from 'jwt-decode'
 import MyChart from '../tools/Chart';
 
 export default function PropertyUpload() {
@@ -16,6 +17,8 @@ export default function PropertyUpload() {
     values: number[],
   }
 
+  const token: any = localStorage.getItem('token')?.substring(7);
+  const user: any = jwtDecode(token);
   const [currentIndex, setCurrentIndex] = useState(0);
   let [tableIndex, setTableIndex] = useState(0);
   let [chartIndex, setChartIndex] = useState(0);
@@ -42,6 +45,7 @@ export default function PropertyUpload() {
     overview: '',
     additional: {},
     images: [],
+    userId: user.email
   })
 
   function handleChange(evt: any) {

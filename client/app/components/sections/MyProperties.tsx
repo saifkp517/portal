@@ -1,131 +1,46 @@
 
 import Image from "next/image"
 import PropertyCard from "../PropertyCard";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { motion } from 'framer-motion';
+import axios from "axios";
 
 export default function MyProperties({ name, image, location, funded, invamt, irr }: any) {
 
-    useEffect(() => {
-        
-    })
 
-    const propDetails = [
-        {
-            name: "Brigade Tech Park",
-            image: "briagadetechpark1.png",
-            location: "Whitefield, Bangaluru",
-            funded: 4,
-            invamt: "25",
-            irr: "16.13"
-        },
-        {
-            name: "Sky One Opportunity",
-            image: "skyoneopportunity.png",
-            location: "Viman Nagar, Pune",
-            funded: 5,
-            invamt: "25",
-            irr: "15.1"
-        },
-        {
-            name: "NASDAQ & NYSE Listed MNC's",
-            image: "nysemnc.png",
-            location: "Magarpatta, Pune",
-            funded: 5,
-            invamt: "25",
-            irr: "15.15"
-        },
-        {
-            name: "Jaipur Logstics Park",
-            image: "jaipurlogisticspark.png",
-            location: "Magarpatta, Pune",
-            funded: 5,
-            invamt: "25",
-            irr: "15.15"
-        },
-        {
-            name: "Brigade Tech Park",
-            image: "briagadetechpark1.png",
-            location: "Whitefield, Bangaluru",
-            funded: 4,
-            invamt: "25",
-            irr: "16.13"
-        },
-        {
-            name: "Sky One Opportunity",
-            image: "skyoneopportunity.png",
-            location: "Viman Nagar, Pune",
-            funded: 5,
-            invamt: "25",
-            irr: "15.1"
-        },
-        {
-            name: "NASDAQ & NYSE Listed MNC's",
-            image: "nysemnc.png",
-            location: "Magarpatta, Pune",
-            funded: 5,
-            invamt: "25",
-            irr: "15.15"
-        },
-        {
-            name: "Jaipur Logstics Park",
-            image: "jaipurlogisticspark.png",
-            location: "Magarpatta, Pune",
-            funded: 5,
-            invamt: "25",
-            irr: "15.15"
-        },
-        {
-            name: "Brigade Tech Park",
-            image: "briagadetechpark1.png",
-            location: "Whitefield, Bangaluru",
-            funded: 4,
-            invamt: "25",
-            irr: "16.13"
-        },
-        {
-            name: "Sky One Opportunity",
-            image: "skyoneopportunity.png",
-            location: "Viman Nagar, Pune",
-            funded: 5,
-            invamt: "25",
-            irr: "15.1"
-        },
-        {
-            name: "NASDAQ & NYSE Listed MNC's",
-            image: "nysemnc.png",
-            location: "Magarpatta, Pune",
-            funded: 5,
-            invamt: "25",
-            irr: "15.15"
-        },
-        {
-            name: "Jaipur Logstics Park",
-            image: "jaipurlogisticspark.png",
-            location: "Magarpatta, Pune",
-            funded: 5,
-            invamt: "25",
-            irr: "15.15"
-        },
-    ]
+    const [propDetails, setPropDetails] = useState<any>([]);
+
+    useEffect(() => {
+        axios.get('http://localhost:8080/properties')
+        .then(res => {
+            console.log(res.data.properties)
+            setPropDetails(res.data.properties)
+        })
+    }, []);
 
     return (
-        <div className="grid gap-28 max-w-screen-xl grid-cols-4 min-h-screen">
-            {/* <PropertyCard  */}
-            {
-                propDetails.map(property => (
-                    <div key={property.name}>
-                        <PropertyCard
-                            name={property.name}
-                            image={property.image}
-                            location={property.location}
-                            funded={property.funded}
-                            invamt={property.invamt}
-                            irr={property.irr}
-                        />
-                    </div>
-                ))
-            }
-        </div >
+        <div className="container mx-auto py-8">
+        <h1 className="text-3xl font-semibold mb-4">Uploaded Properties</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {propDetails.map((property: any) => (
+                <PropertyCard
+                    key={property.building_name}
+                    name={property.building_name}
+                    image={property.images[0]}
+                    location={property.location}
+                    funded={8}
+                    invamt={property.minimum_investment}
+                    irr={property.irr}
+                />
+            ))}
+        </div>
+        {/* Additional details section */}
+        <div className="mt-8">
+            <h2 className="text-2xl font-semibold mb-4">Additional Details</h2>
+            <p className="text-lg">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            {/* Add more details here as needed */}
+        </div>
+    </div>
 
 
     )
