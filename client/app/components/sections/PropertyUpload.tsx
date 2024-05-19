@@ -2,7 +2,7 @@
 
 import Head from 'next/head'
 import Image from 'next/image';
-import React, { useState, ChangeEvent, FormEvent } from 'react';
+import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import MyTable from '../tools/Table';
 import { Editor } from "@tinymce/tinymce-react";
 import { Bar } from 'react-chartjs-2';
@@ -17,8 +17,35 @@ export default function PropertyUpload() {
     values: number[],
   }
 
-  const token: any = localStorage.getItem('token')?.substring(7);
-  const user: any = jwtDecode(token);
+  const [user, setUser] = useState<any>("");
+
+  useEffect(() => {
+
+    const token: string | null = localStorage.getItem('token');
+
+    if (token) {
+      try {
+        // Decode the token
+        const tokenWithoutBearer: string = token.substring(7); // Remove 'Bearer ' prefix
+        setUser(jwtDecode(tokenWithoutBearer));   
+        
+        setFormValues((prevValues: any) => ({
+          ...prevValues,
+          userId: user.email || '' // Default to empty string if user.email is undefined
+        }));
+
+        // Now you can use the user object safely
+      } catch (error) {
+        // Handle decoding errors
+        console.error('Error decoding JWT token:', error);
+      }
+    } else {
+      // Handle case when token is not found
+      console.error('Token not found in localStorage');
+    }
+  }, [user.email])
+
+
   const [currentIndex, setCurrentIndex] = useState(0);
   let [tableIndex, setTableIndex] = useState(0);
   let [chartIndex, setChartIndex] = useState(0);
@@ -45,7 +72,7 @@ export default function PropertyUpload() {
     overview: '',
     additional: {},
     images: [],
-    userId: user.email
+    userId: ''
   })
 
   function handleChange(evt: any) {
@@ -54,6 +81,8 @@ export default function PropertyUpload() {
       ...formValues,
       [evt.target.name]: value
     });
+
+    console.log(formValues)
   }
 
   const receiveChartData = (data: chartInterface) => {
@@ -128,6 +157,7 @@ export default function PropertyUpload() {
   }
 
   async function submitHandler(e: FormEvent<HTMLFormElement>) {
+
     e.preventDefault();
 
     const uploadResponse = await handleUpload();
@@ -138,7 +168,6 @@ export default function PropertyUpload() {
       })
         .then(res => {
           if (res.data.success == true) {
-
             alert("lesgoo!");
           }
         })

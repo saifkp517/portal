@@ -24,8 +24,7 @@ export default function SideNav({ sendChangedComponent }: any) {
                 return;
             })
             .catch(err => {
-                console.log(err)
-                if (err.response === "Forbidden")
+                if (err.response.data === "Forbidden")
                     window.location.href = '/'
             })
     }, [])

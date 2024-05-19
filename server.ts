@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import * as jwt from "jsonwebtoken";
 import bodyParser from "body-parser";
 import multer from "multer";
+import nodemailer from 'nodemailer';
 
 const cors = require('cors')
 
@@ -345,6 +346,112 @@ app.get('/properties', async (req, res) => {
 })
 
 /////////////////////////////////////////////property CRUD//////////////////////////////////////////
+
+
+////////////////////////////////////////////email middleware////////////////////////////////////////
+
+const transporter = nodemailer.createTransport({
+  host: "smtpout.secureserver.net",
+  secure: true,
+  tls: {
+    ciphers: 'SSLv3'
+  },
+  requireTLS: true,
+  port: 465,
+  debug: true,
+  auth: {
+    user: "support@propertyverse.co.in",
+    pass: "PropertyVerse",
+  }
+})
+
+app.post('/notify-mail', async (req, res) => {
+
+  const { emaillist } = req.body;
+
+  console.log('clicked')
+  try {
+    const info = await transporter.sendMail({
+      from: "Support <support@propertyverse.co.in>",
+      to: "saifkp517@gmail.com",
+      subject: "Notification: New Property Added",
+      text: "Hello,\n\nA new property has been added to PropertyVerse. Please login to view the latest listings.\n\nThank you,\nThe PropertyVerse Team",
+      html: `
+      <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Property Notification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo {
+            width: 150px;
+            height: auto;
+        }
+        .content {
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #007bff;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://yourdomain.com/assets/logo.png" alt="PropertyVerse Logo" class="logo">
+        </div>
+        <div class="content">
+            <h2>New Property Notification</h2>
+            <p>Hello,</p>
+            <p>A new property has been added to PropertyVerse. Please click the button below to view the latest listings:</p>
+            <a href="https://propertyverse.co.in/login" class="button">View Properties</a>
+            <p>Thank you,<br>The PropertyVerse Team</p>
+        </div>
+    </div>
+</body>
+</html>
+
+      `
+    });
+
+
+    if (info) {
+      console.log("sent successfully" + info.response)
+    }
+
+  }
+  catch (err) {
+    console.log(err)
+  }
+})
+
+////////////////////////////////////////////email middleware////////////////////////////////////////
 
 app.get('/authorize', userAuth, (req, res) => {
   res.send('Authorized!');

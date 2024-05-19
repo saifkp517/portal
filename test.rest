@@ -8,3 +8,7 @@ Content-Type: application/json
     "password": "p",
     "email": "asdqwe",
 }
+
+###
+
+post http://localhost:8080/notify-mail
