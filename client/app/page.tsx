@@ -25,11 +25,11 @@ export default function Home() {
         "Authorization": `${token}`
       }
     })
-    .then(data => {
-      window.location.href = '/dashboard'
-    })
+      .then(data => {
+        window.location.href = '/dashboard'
+      })
       .catch(err => {
-        if(err.response.data === "Forbidden")
+        if (err.response.data === "Forbidden")
           return;
       })
   }, [])
@@ -38,95 +38,41 @@ export default function Home() {
 
   return (
 
-    <div className="bg-gray-100 font-sans leading-normal tracking-normal">
-
-      {/* <!-- Navigation --> */}
-      <nav className="bg-gray-900 p-6 fixed w-full z-10 top-0">
-        <div className="text-white container mx-auto flex justify-between items-center">
-
-          <div className="flex items-center">
-            <a className="text-lg text-white font-semibold" href="#">PropertyVerse</a>
+    <div className="bg-gradient-to-r from-white to-blue-200 h-auto">
+      <nav className="py-8 top-0">
+        <div className="container mx-auto flex items-center justify-between">
+          <div className="flex font-normal">
+            <img src="/logo.png" className='h-20' alt="" />
           </div>
-          <div className="flex items-center">
-            <a className="text-white hover:text-gray-400 mr-4" href="#">Features</a>
-            <a className="text-white hover:text-gray-400 mr-4" href="#">Pricing</a>
-            <a className="text-white hover:text-gray-400" href="#">Contact</a>
-          </div>
+
         </div>
       </nav>
 
-      {/* <!-- Hero Section --> */}
-      <header className="bg-gradient-to-r from-blue-500 to-indigo-500 shadow-md flex h-screen text-center text-white py-20">
-        <div className="container m-auto">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-5">Welcome to Your Dashboard</h1>
-          <p className="text-xl md:text-2xl lg:text-3xl mb-12">The perfect solution for your data visualization needs</p>
-          <a href="#" className="bg-white text-gray-900 font-semibold py-3 px-8 rounded-full hover:bg-gray-300">Get Started</a>
-        </div>
-      </header>
-
-      {/* <!-- Features Section --> */}
-      <section className="container mx-auto my-20">
-        <div className="container mx-auto">
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div className="text-left">
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold mb-4">Insights at Your Fingertips</h2>
-              <p className="text-lg md:text-xl lg:text-2xl mb-6">Access real-time analytics and key performance indicators to make informed decisions.</p>
-              <ul className="text-lg md:text-xl lg:text-2xl mb-6">
-                <li className="flex items-center mb-3">
-                  <span className="bg-yellow-500 h-2 w-3 rounded-full mr-2"></span>
-                  Total Revenue Analysis: Gain insights into your total revenue trends and performance.
-                </li>
-                <li className="flex items-center mb-3">
-                  <span className="bg-green-500 h-2 w-3 rounded-full mr-2"></span>
-                  New Customers Tracking: Monitor and analyze the acquisition of new customers over time.
-                </li>
-                <li className="flex items-center mb-3">
-                  <span className="bg-red-500 h-2 w-3 rounded-full mr-2"></span>
-                  Retention Rate Analysis: Understand and optimize customer retention with retention rate metrics.
-                </li>
-                <li className="flex items-center mb-3">
-                  <span className="bg-purple-500 h-2 w-3 rounded-full mr-2"></span>
-                  Conversion Rate Monitoring: Track and improve conversion rates to maximize business growth.
-                </li>
-              </ul>
-
-            </div>
-            <div className="text-left">
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold mb-4">Data Visualization Made Simple</h2>
-              <p className="text-lg md:text-xl lg:text-2xl mb-6">Transform complex data into intuitive charts, graphs, and maps for easy interpretation.</p>
-              <div className="grid grid-cols-1 gap-4">
-                <div className="bg-gray-900 text-white p-4 rounded-lg shadow-md">
-                  <h3 className="text-xl font-semibold mb-2">Sales Performance</h3>
-                  <p className="text-lg">Visualize sales trends and track performance over time.</p>
-                </div>
-                <div className="bg-gray-900 text-white p-4 rounded-lg shadow-md mb-8">
-                  <h3 className="text-xl font-semibold mb-2">Customer Demographics</h3>
-                  <p className="text-lg">Understand your customer base with demographic insights.</p>
-                </div>
-              </div>
-              <a href="#" className="bg-white text-gray-900 font-semibold py-3 px-8 rounded-full hover:bg-gray-300 mt-6">Start Visualizing</a>
-            </div>
+      {/* hero section */}
+      <section className='flex min-h-screen my-20'>
+        <div className="mx-auto font-bold max-w-screen-xl ">
+          <p className='mb-10 text-xl text-blue-600 text-center'>PropertyVerse</p>
+          <h1 className='text-center text-8xl tracking-tight leading-2 text-gray-800'>Revolutionize Property Management with Our Advanced Dashboard</h1>
+          <p className='my-20 text-lg text-gray-600 tracking-wider font-semibold text-center'>Welcome to PropertyVerse's cutting-edge property management dashboard. Designed for channel partners and brokers, our platform streamlines property uploads, risk assessment, and user engagement, making your real estate operations more efficient and insightful.</p>
+          <div className="flex space-x-5  justify-center">
+            <button className='p-6 border bg-blue-500 border-white text-white rounded-lg hover:bg-blue-600 hover:border-transparent'>Continue as Channel Partner</button>
+            <button className='p-6 border bg-white border-blue-500 text-blue-500 rounded-lg hover:bg-gray-100 hover:border-transparent'>Continue as Broker</button>
           </div>
+
+          {/* device mockup */}
+          {/* <div className="my-20">
+            <div className="relative mx-auto bg-gradient-to-r from-white to-blue-200 border-blue-200 dark:border-blue-200 border-[8px] rounded-t-xl h-[360px] max-w-[800px] md:h-[480px] md:max-w-[1024px]">
+              <div className="rounded-lg overflow-hidden h-full bg-white">
+                Your dashboard content here
+              </div>
+            </div>
+            <div className="relative mx-auto bg-blue-400 rounded-b-xl rounded-t-sm h-[17px] max-w-[1000px] md:h-[21px] md:max-w-[1200px]">
+              <div className="absolute left-1/2 top-0 -translate-x-1/2 rounded-b-xl w-[300px] h-[8px] bg-white"></div>
+            </div>
+          </div> */}
+
         </div>
       </section>
-
-      {/* <!-- Call to Action --> */}
-      <section className="bg-gray-900 text-white py-20">
-        <div className="container mx-auto text-center">
-          <h2 className="text-4xl font-semibold mb-4">Ready to Get Started?</h2>
-          <p className="text-xl mb-8">Sign up now and revolutionize the way you analyze and visualize your data.</p>
-          <a href="/signin" className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-8 rounded-full">Sign Up</a>
-        </div>
-      </section>
-
-      {/* <!-- Footer --> */}
-      <footer className="bg-gray-800 text-white py-8">
-        <div className="container mx-auto text-center">
-          <p>&copy; 2024 Your Dashboard. All rights reserved.</p>
-        </div>
-      </footer>
-
     </div>
   );
 }
