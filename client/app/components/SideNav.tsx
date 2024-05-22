@@ -9,7 +9,7 @@ import axios from 'axios';
 export default function SideNav({ sendChangedComponent }: any) {
 
     const user = {
-        name: 'saif khan',
+        name: 'john doe',
         email: 'john@example.com'
     };
 

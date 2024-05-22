@@ -7,7 +7,7 @@ import MyTable from '../tools/Table';
 import { Editor } from "@tinymce/tinymce-react";
 import { Bar } from 'react-chartjs-2';
 import axios from 'axios'
-import {jwtDecode} from 'jwt-decode'
+import { jwtDecode } from 'jwt-decode'
 import MyChart from '../tools/Chart';
 
 export default function PropertyUpload() {
@@ -27,8 +27,8 @@ export default function PropertyUpload() {
       try {
         // Decode the token
         const tokenWithoutBearer: string = token.substring(7); // Remove 'Bearer ' prefix
-        setUser(jwtDecode(tokenWithoutBearer));   
-        
+        setUser(jwtDecode(tokenWithoutBearer));
+
         setFormValues((prevValues: any) => ({
           ...prevValues,
           userId: user.email || '' // Default to empty string if user.email is undefined
@@ -52,7 +52,8 @@ export default function PropertyUpload() {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [uploadImages, setUploadImages] = useState<FormData>(new FormData());
   const [chartData, setChartData] = useState<chartInterface | null>(null)
-
+  const [heading, setHeading] = useState('');
+  const [description, setDescription] = useState('')
 
   const [tableData, setTabledata] = useState<any>([]);
   const [inputType, setinputType] = useState("");
@@ -70,7 +71,7 @@ export default function PropertyUpload() {
     location: '',
     tenant: '',
     overview: '',
-    additional: {},
+    additional: { heading: '', description: '', data: {} },
     images: [],
     userId: ''
   })
@@ -179,14 +180,24 @@ export default function PropertyUpload() {
   }
 
   function appendData() {
+
+    const newEntry = {
+      heading,
+      description,
+      data: (currentIndex == 0 ? tableData : chartData) || ""
+    }
+
     setFormValues((prevState: any) => ({
       ...prevState,
       additional: {
         ...prevState.additional,
-        [currentIndex == 0 ? `table-${tableIndex}` : `chart-${chartIndex}`]: currentIndex == 0 ? tableData : chartData
+        [currentIndex == 0 ? `table-${tableIndex}` : `chart-${chartIndex}`]: newEntry,
       }
     }))
     currentIndex == 0 ? setTableIndex(tableIndex + 1) : setChartIndex(chartIndex + 1)
+
+    setHeading("");
+    setDescription("");
 
   }
 
@@ -203,7 +214,7 @@ export default function PropertyUpload() {
   return (
 
     <div className="">
-      <div className="grid grid-cols-2">
+      <div className="grid grid-cols-1 lg:grid-cols-2">
 
         <div className="">
           <form onSubmit={submitHandler} className=" mt-14 max-w-screen-md mx-auto">
@@ -297,6 +308,18 @@ export default function PropertyUpload() {
 
             <div className='text-center'>
               <button type='button' className='py-2 px-4 border border-black rounded-lg hover:bg-slate-500 hover:text-white hover:border-transparent' onClick={toggleComponent}>Toggle ToolBox</button>
+              <div className="relative z-0 w-full mb-5 group">
+                <label className="block mb-2 text-sm font-medium text-gray-900">Heading</label>
+                <input name="heading" value={heading} onChange={e => setHeading(e.target.value)} type="text" className="shadow-sm  border border-gray-500 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 " placeholder=" " required />
+
+
+              </div>
+              <div className="relative z-0 w-full mb-5 group">
+                <label className="block mb-2 text-sm font-medium text-gray-900">Desciption</label>
+                <input name="description" value={description} onChange={e => setDescription(e.target.value)} type="text" className="shadow-sm  border border-gray-500 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 " placeholder=" " required />
+
+
+              </div>
               <div className="border-2 border-gray-600 rounded-lg p-4 m-4">{components[currentIndex]}</div>
             </div>
 
@@ -371,53 +394,61 @@ export default function PropertyUpload() {
               </div>
             </div>
             <div className="chart p-4">
+
               {
                 Object.keys(formValues.additional).map(key => {
                   if (key.startsWith("chart-")) {
-                    const chartData = formValues.additional[key];
+                    const chartData = formValues.additional[key].data;
+                    console.log(chartData)
                     if (chartData && chartData.labels && chartData.values) {
                       return (
-                        <Bar
-                          key={key} // Make sure to set a unique key for each chart
-                          options={{
-                            responsive: true,
-                            plugins: {
-                              legend: {
-                                position: 'top' as const,
+                        <div className="border-black hover:border p-2 hover:rounded-lg">
+                          <h1 className='font-bold text-lg text-green-500'>{formValues.additional[key].heading}</h1>
+                          <p className=''>{formValues.additional[key].description}</p>
+                          <Bar
+                            key={key} // Make sure to set a unique key for each chart
+                            options={{
+                              responsive: true,
+                              plugins: {
+                                legend: {
+                                  position: 'top' as const,
+                                },
+                                title: {
+                                  display: true,
+                                  color: 'black',
+                                  text: 'Rental Yield Growth',
+                                  padding: 10,
+                                  fullSize: true,
+                                  font: {
+                                    weight: 'bold',
+                                    size: 24
+                                  }
+                                },
                               },
-                              title: {
-                                display: true,
-                                color: 'black',
-                                text: 'Rental Yield Growth',
-                                padding: 10,
-                                fullSize: true,
-                                font: {
-                                  weight: 'bold',
-                                  size: 24
-                                }
-                              },
-                            },
-                          }}
-                          data={{
-                            labels: chartData.labels,
-                            datasets: [
-                              {
-                                label: 'Growth Yield',
-                                data: chartData.values.map((value: any) => parseInt(value)),
-                                backgroundColor: ['#50C878', '#228B22'],
-                                barPercentage: 0.5,
-                              },
-                            ],
-                          }}
-                        />
+                            }}
+                            data={{
+                              labels: chartData.labels,
+                              datasets: [
+                                {
+                                  label: 'Growth Yield',
+                                  data: chartData.values.map((value: any) => parseInt(value)),
+                                  backgroundColor: ['#50C878', '#228B22'],
+                                  barPercentage: 0.5,
+                                },
+                              ],
+                            }}
+                          />
+                        </div>
                       );
                     }
                   }
                   else if (key.startsWith("table-")) {
-                    const tableData = formValues.additional[key];
+                    const tableData = formValues.additional[key].data;
                     if (tableData) {
                       return (
-                        <div className="my-4 overflow-auto">
+                        <div className="my-4 overflow-auto border-black hover:border p-2 hover:rounded-lg">
+                          <h1 className='font-bold text-lg text-green-500'>{formValues.additional[key].heading}</h1>
+                          <p className=''>{formValues.additional[key].description}</p>
                           <table className="table-fixed rounded-lg border-collapse bg-white">
                             <tbody>
                               {tableData.map((row: any, rowIndex: number) => (
