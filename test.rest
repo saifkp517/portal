@@ -1,12 +1,24 @@
 ###
 
-post http://localhost:8080/signup
+post http://localhost:8080/signup/investor
 Content-Type: application/json
 
 {
-    "name": "asdads",
-    "password": "p",
-    "email": "asdqwe",
+    "name": "saif",
+    "password": "pass",
+    "email": "test@gmail.com",
+    "provider": "propertyverse"
+}
+
+###
+
+post http://localhost:8080/signin/investor
+Content-Type: application/json
+
+{
+    "email": "test@gmail.com",
+    "password": "pass",
+    "provider": "google"
 }
 
 ###

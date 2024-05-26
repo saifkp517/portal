@@ -456,11 +456,7 @@ export default function PropertyUpload() {
                                   <tr key={rowIndex}>
                                     {row.map((cell: any, colIndex: number) => (
                                       <th className="border border-black bg-green-500 text-white px-4 py-2" key={colIndex}>
-                                        <input
-                                          type="text"
-                                          className="bg-transparent border-none w-full text-center"
-                                          value={cell}
-                                        />
+                                        {cell}
                                       </th>
                                     ))}
                                   </tr>
@@ -470,11 +466,7 @@ export default function PropertyUpload() {
                                     <tr key={rowIndex}>
                                       {row.map((cell: any, colIndex: number) => (
                                         <td className="border border-black px-4 py-2" key={colIndex}>
-                                          <input
-                                            type="text"
-                                            className="bg-transparent border-none w-full text-center"
-                                            value={cell}
-                                          />
+                                          {cell}
                                         </td>
                                       ))}
                                     </tr>

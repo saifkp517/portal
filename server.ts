@@ -15,6 +15,10 @@ const app = express();
 const prisma = new PrismaClient();
 const port = 8080;
 
+interface CustomRequest extends Request {
+  user?: any; // Define the user property with any type, you can replace 'any' with the actual type of your user object
+}
+
 var corsOptions = {
   origin: 'http://localhost:3000',
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
@@ -214,7 +218,7 @@ app.post('/signin/admin', async (req, res) => {
 })
 
 //middleware to authorize users by role
-const userAuth = (req: Request, res: Response, next: NextFunction) => {
+const userAuth = (req: CustomRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers["authorization"];
   if (!authHeader) return res.sendStatus(403);
   const token = authHeader.split(" ")[1];
@@ -223,6 +227,7 @@ const userAuth = (req: Request, res: Response, next: NextFunction) => {
     if (err) return res.sendStatus(403); //invalid token
 
     console.log(decoded); //for correct token
+    req.user = decoded;
     next();
   });
 }
@@ -268,7 +273,6 @@ app.post('/photos/upload', upload.any(), async (req, res, next) => {
 
 app.post('/createproperty', async (req, res) => {
   try {
-
     const {
       building_name,
       asset_type,
@@ -313,6 +317,52 @@ app.post('/createproperty', async (req, res) => {
     if (property) {
       return res.status(200).json({
         message: "Property successfully uploaded",
+        success: true
+      })
+    }
+  }
+  catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false
+    });
+  }
+})
+
+app.post('/update-property', async (req, res) => {
+
+  const { propertyid, building_name, asset_type, investment_size, lockin, entry_yeild, irr, multiplier, minimum_investment, location, tenant, overview, floorplan, tenant_details, images, additional, userId } = req.body;
+
+  const updatedData = {
+    building_name,
+    asset_type,
+    investment_size,
+    lockin,
+    entry_yeild,
+    irr,
+    multiplier,
+    minimum_investment,
+    location,
+    tenant,
+    overview,
+    floorplan: floorplan ? JSON.parse(floorplan) : null,
+    tenant_details: tenant_details ? JSON.parse(tenant_details) : null,
+    images: Array.isArray(images) && images.length > 0 ? images : [],
+    additional,
+    userId
+  }
+
+  try {
+    const updateProperty = await prisma.property.update({
+      where: {
+        id: propertyid
+      },
+      data: updatedData
+    })
+    if (updateProperty) {
+      return res.status(200).json({
+        updatedData: updateProperty,
         success: true
       })
     }
@@ -453,9 +503,152 @@ app.post('/notify-mail', async (req, res) => {
 
 ////////////////////////////////////////////email middleware////////////////////////////////////////
 
-app.get('/authorize', userAuth, (req, res) => {
-  res.send('Authorized!');
+app.get('/authorize', userAuth, async (req: CustomRequest, res) => {
+  try {
+    const userEmail = req.user.email;
+    const user = await prisma.user.findUnique({
+      where: {
+        email: userEmail
+      }
+    })
+    if (user) {
+      return res.status(200).json({
+        user: user,
+        success: true
+      })
+    }
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false
+    });
+  }
 })
+
+//////////////////////////////////investor interface///////////////////////////////////////
+
+app.post('/signin/investor', async (req, res) => {
+  const { email, password, provider } = req.body;
+
+  try {
+    // Find the user by email
+    let user = await prisma.investor.findUnique({
+      where: { email }
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "No account found with this email. Please sign up first.",
+        success: false
+      });
+    }
+
+    if (provider === 'google') {
+      // For Google OAuth, just check if the provider matches
+      if (user.provider !== 'google') {
+        return res.status(400).json({
+          message: "Please sign in using your Google account.",
+          success: false
+        });
+      }
+      // Generate JWT or any session management token
+      const token = jwt.sign({ userId: user.id }, 'Secret', { expiresIn: '1h' });
+
+      return res.status(200).json({
+        message: "Logged in successfully",
+        success: true,
+        token
+      });
+    } else {
+      // For traditional login, validate the password
+      if (user.provider !== 'propertyverse') {
+        return res.status(400).json({
+          message: "Please sign in using your correct method.",
+          success: false
+        });
+      }
+
+      const isPasswordValid = compareSync(password, user.password!);
+
+      if (!isPasswordValid) {
+        return res.status(400).json({
+          message: "Invalid email or password",
+          success: false
+        });
+      }
+
+      // Generate JWT or any session management token
+      const token = jwt.sign({ userId: user.id }, 'Secret', { expiresIn: '1h' });
+
+      return res.status(200).json({
+        message: "Logged in successfully",
+        success: true,
+        token
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false
+    });
+  }
+});
+
+
+app.post('/signup/investor', async (req, res) => {
+  const { name, email, provider, password } = req.body;
+
+  try {
+    // Check if the user already exists
+    let investor = await prisma.investor.findUnique({
+      where: { email }
+    });
+
+    if (investor) {
+      return res.status(400).send("An account with this email already exists. Please log in.");
+    }
+
+    // If provider is Google, do not require password
+    let hash = null;
+    if (provider !== "google") {
+      if (!password) {
+        return res.status(400).send("Password is required for non-Google signups.");
+      }
+      // Hash the password for traditional signup
+      hash = hashSync(password, genSaltSync(10));
+    }
+
+    // Create the user
+    investor = await prisma.investor.create({
+      data: {
+        name,
+        email,
+        password: hash,
+        provider: provider === "google" ? provider : 'propertyverse'
+      }
+    });
+
+    return res.status(201).json({
+      message: "User created successfully",
+      success: true,
+      user: {
+        id: investor.id,
+        name: investor.name,
+        email: investor.email,
+        provider: investor.provider
+      }
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false
+    });
+  }
+});
 
 app.listen(port, () => {
   console.log(`Listening on port ${port}...`);

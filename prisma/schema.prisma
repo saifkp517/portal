@@ -42,3 +42,11 @@ model User {
   role       Role
   properties Property[]
 }
+
+model Investor {
+  id         String     @id @default(uuid())
+  name       String?
+  email      String     @unique
+  password   String?
+  provider   String?
+}

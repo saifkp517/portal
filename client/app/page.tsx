@@ -20,18 +20,24 @@ export default function Home() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    axios.get('http://localhost:8080/authorize', {
-      headers: {
-        "Authorization": `${token}`
-      }
-    })
-      .then(data => {
-        window.location.href = '/dashboard'
+    if (token) {
+      axios.get('http://localhost:8080/authorize', {
+        headers: {
+          "Authorization": `${token}`
+        }
       })
-      .catch(err => {
-        if (err.response.data === "Forbidden")
-          return;
-      })
+        .then(data => {
+          window.location.href = '/dashboard'
+        })
+        .catch(err => {
+          if (err.response.data === "Forbidden")
+            return;
+        })
+    }
+    else
+    {
+      console.log("Please Log In")
+    }
   }, [])
 
 
