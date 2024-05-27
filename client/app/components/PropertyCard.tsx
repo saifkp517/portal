@@ -1,8 +1,24 @@
 
 // import LocationOnIcon from '@mui/icons-material/LocationOn';
 import Image from "next/image"
+import axios from 'axios';
 
-export default function PropertyCard({ name, image, location, funded, invamt, irr }: any) {
+export default function PropertyCard({ id, name, image, location, funded, invamt, irr }: any) {
+
+    console.log(image)
+
+    function deletProperty()
+    {
+        axios.post(`http://localhost:8080/delete/${id}`)
+        .then(res => {
+            console.log(res);
+            alert(res.data.message)
+            window.location.reload();
+        })
+        .catch(e => {
+            console.log(e)
+        })
+    }
 
     const href = name.split(" ").join("_").toLowerCase();
 
@@ -11,7 +27,7 @@ export default function PropertyCard({ name, image, location, funded, invamt, ir
             <div className="static w-80 bg-card border shadow-lg shadow-gray-700 border-blue-300 rounded-lg  ">
                 <div className="flex flex-col items-center">
                     <div className=" w-11/12 m-4 h-48  relative ">
-                        <Image fill unoptimized className="object-fill border border-black rounded-xl" src={`/${image}`} alt="" />
+                        <Image fill unoptimized className="object-fill border border-black rounded-xl" src={`http://localhost:8080/${image}`} alt="" />
                     </div>
                     <div className="flex flex-col justify-between px-4">
                         <h5 className="mb-2 text-2xl font-bold    tracking-tighter text-gray-600 line-clamp-1">{name}</h5>
@@ -57,14 +73,14 @@ export default function PropertyCard({ name, image, location, funded, invamt, ir
                                 <sub className="text-xs">Risk Factor</sub>
                             </div>
                         </div>
-                        <a href={`/commercial_properties/${href}`}>
-                            <button className='mx-auto w-full mb-4 py-2 px-4 rounded-lg bg-blue-600 text-white tracking-tight'>
-
+                        <div className="grid grid-cols-2 gap-5">
+                            <button  className='mx-auto w-full mb-4 py-2 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white tracking-tight'>
                                 Edit
-
-                              
                             </button>
-                        </a>
+                            <button onClick={deletProperty} className='mx-auto w-full mb-4 py-2 px-4 rounded-lg bg-red-600 hover:bg-red-700 text-white tracking-tight'>
+                                Delete
+                            </button>
+                        </div>
 
                     </div>
                 </div>

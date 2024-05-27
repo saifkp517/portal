@@ -13,24 +13,24 @@ import SideNav from '../components/SideNav';
 import PropertyUpload from '../components/sections/PropertyUpload';
 import InterestedUsers from '../components/sections/InterestedUsers';
 import MyProperties from '../components/sections/MyProperties';
-import EditSection from '../components/sections/EditSection';
+import EditPage from '../components/sections/EditPage';
 
 export default function Home() {
 
-  const [activeComponent, setActiveComponent] = useState('edit/asdads');
+  const [activeComponent, setActiveComponent] = useState('edit');
   const handleActiveComponent = (data: string) => {
     setActiveComponent(data)
   }
 
   return (
-
+    
     <div className="">
       <SideNav sendChangedComponent={handleActiveComponent} />
       <div className="p-8 sm:ml-64 bg-gray-200">
           {activeComponent === 'upload' && <PropertyUpload />}
           {activeComponent === 'users' && <InterestedUsers />}
           {activeComponent === 'properties' && <MyProperties />}
-          {activeComponent.startsWith('edit/') && <EditSection />}
+          {activeComponent === 'edit' && <EditPage />}
       </div>
     </div>
   );

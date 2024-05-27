@@ -1,4 +1,5 @@
 import express from "express";
+import path from "path";
 import type { Request, Response, NextFunction } from "express";
 import { compareSync, genSaltSync, hashSync } from "bcrypt-ts";
 import mongoose from "mongoose";
@@ -36,6 +37,8 @@ const user = {
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
 
 //////////////////////////////////Authentication handlers below//////////////////////////////////////////////
@@ -385,6 +388,69 @@ app.get('/properties', async (req, res) => {
         success: true
       })
     }
+  }
+  catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false
+    });
+  }
+})
+
+app.get('/property/:propertyid', async (req, res) => {
+  try {
+
+    const { propertyid } = req.params;
+
+    const property = await prisma.property.findUnique({
+      where: {
+        id: propertyid
+      }
+    })
+    if(property) {
+      return res.status(200).json({
+        property,
+        success: true
+      })
+    }
+  }
+  catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false
+    });
+  }
+})
+
+app.post('/delete/:propertyid', async (req, res) => {
+
+  const { propertyid } = req.params;
+
+  try {
+
+    const property = await prisma.property.findUnique({
+      where: { id: propertyid }
+    })
+
+    if (property) {
+      const deleteProperty = await prisma.property.delete({
+        where: {
+          id: propertyid
+        }
+      })
+      if (deleteProperty) {
+        return res.status(200).json({
+          message: "Property Successfully Deleted",
+          success: true
+        })
+      }
+    }
+    else {
+      res.status(400).send("Property Does not exist")
+    }
+
   }
   catch (e) {
     console.log(e);
