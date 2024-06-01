@@ -24,7 +24,8 @@ export default function MyProperties({ name, image, location, funded, invamt, ir
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {propDetails.map((property: any) => (
                 <PropertyCard
-                    key={property.building_name}
+                    key={property.id}
+                    id={property.id}
                     name={property.building_name}
                     image={property.images[0]}
                     location={property.location}
@@ -36,8 +37,8 @@ export default function MyProperties({ name, image, location, funded, invamt, ir
         </div>
         {/* Additional details section */}
         <div className="mt-8">
-            <h2 className="text-2xl font-semibold mb-4">Additional Details</h2>
-            <p className="text-lg">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            <h2 className="text-2xl font-semibold mb-4">Note.</h2>
+            <p className="text-lg">Properties listed here will be reviewd and calculated by our brokers for Credit Risk Analysis</p>
             {/* Add more details here as needed */}
         </div>
     </div>

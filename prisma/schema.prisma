@@ -25,7 +25,7 @@ model Property {
   images             String[]
   tables             Json?
   additional         Json?
-  user               User         @relation(fields: [userId], references: [id])
+  user               User         @relation(fields: [userId], references: [email])
   userId             String
 }
 
@@ -41,4 +41,12 @@ model User {
   password   String
   role       Role
   properties Property[]
+}
+
+model Investor {
+  id         String     @id @default(uuid())
+  name       String?
+  email      String     @unique
+  password   String?
+  provider   String?
 }

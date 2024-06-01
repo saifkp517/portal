@@ -13,10 +13,11 @@ import SideNav from '../components/SideNav';
 import PropertyUpload from '../components/sections/PropertyUpload';
 import InterestedUsers from '../components/sections/InterestedUsers';
 import MyProperties from '../components/sections/MyProperties';
+import EditSection from '../components/sections/EditSection';
 
 export default function Home() {
 
-  const [activeComponent, setActiveComponent] = useState('upload');
+  const [activeComponent, setActiveComponent] = useState('properties');
   const handleActiveComponent = (data: string) => {
     setActiveComponent(data)
   }
@@ -29,6 +30,7 @@ export default function Home() {
           {activeComponent === 'upload' && <PropertyUpload />}
           {activeComponent === 'users' && <InterestedUsers />}
           {activeComponent === 'properties' && <MyProperties />}
+          {activeComponent.startsWith('edit/') && <EditSection />}
       </div>
     </div>
   );

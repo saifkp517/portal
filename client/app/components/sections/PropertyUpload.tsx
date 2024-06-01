@@ -2,30 +2,63 @@
 
 import Head from 'next/head'
 import Image from 'next/image';
-import React, { useState, ChangeEvent, FormEvent } from 'react';
+import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import MyTable from '../tools/Table';
 import { Editor } from "@tinymce/tinymce-react";
+import { CategoryScale, Chart } from "chart.js";
 import { Bar } from 'react-chartjs-2';
 import axios from 'axios'
-import {jwtDecode} from 'jwt-decode'
+import { jwtDecode } from 'jwt-decode'
 import MyChart from '../tools/Chart';
 
 export default function PropertyUpload() {
+
+  Chart.register(CategoryScale);
 
   interface chartInterface {
     labels: number[],
     values: number[],
   }
 
-  const token: any = localStorage.getItem('token')?.substring(7);
-  const user: any = jwtDecode(token);
+  const [user, setUser] = useState<any>("");
+
+
+
+  useEffect(() => {
+
+    const token: string | null = localStorage.getItem('token');
+
+    if (token) {
+      try {
+        // Decode the token
+        const tokenWithoutBearer: string = token.substring(7); // Remove 'Bearer ' prefix
+        setUser(jwtDecode(tokenWithoutBearer));
+
+        setFormValues((prevValues: any) => ({
+          ...prevValues,
+          userId: user.email || '' // Default to empty string if user.email is undefined
+        }));
+
+        // Now you can use the user object safely
+      } catch (error) {
+        // Handle decoding errors
+        console.error('Error decoding JWT token:', error);
+      }
+    } else {
+      // Handle case when token is not found
+      console.error('Token not found in localStorage');
+    }
+  }, [user.email])
+
+
   const [currentIndex, setCurrentIndex] = useState(0);
   let [tableIndex, setTableIndex] = useState(0);
   let [chartIndex, setChartIndex] = useState(0);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [uploadImages, setUploadImages] = useState<FormData>(new FormData());
   const [chartData, setChartData] = useState<chartInterface | null>(null)
-
+  const [heading, setHeading] = useState('');
+  const [description, setDescription] = useState('')
 
   const [tableData, setTabledata] = useState<any>([]);
   const [inputType, setinputType] = useState("");
@@ -43,10 +76,14 @@ export default function PropertyUpload() {
     location: '',
     tenant: '',
     overview: '',
-    additional: {},
+    additional: { heading: '', description: '', data: {} },
     images: [],
-    userId: user.email
+    userId: ''
   })
+
+  useEffect(() => {
+    console.log(formValues)
+  }, [formValues])
 
   function handleChange(evt: any) {
     const value = evt.target.value;
@@ -54,6 +91,8 @@ export default function PropertyUpload() {
       ...formValues,
       [evt.target.name]: value
     });
+
+    console.log(formValues)
   }
 
   const receiveChartData = (data: chartInterface) => {
@@ -65,7 +104,7 @@ export default function PropertyUpload() {
     setCurrentIndex((currentIndex + 1) % components.length);
   };
 
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+  function handleImageChange(e: ChangeEvent<HTMLInputElement>) {
     const files = e.target.files
     if (files) {
       const newFormData = new FormData(); // Create a new FormData object
@@ -95,32 +134,26 @@ export default function PropertyUpload() {
       setSelectedImages(prevImages => [...prevImages, ...newImagesArray]);
 
     }
+
+    console.log(formValues)
   }
 
-  const handleUpload = async () => {
+  async function handleUpload() {
     try {
       const response = await axios.post('http://localhost:8080/photos/upload', uploadImages);
       console.log("Response" + response);
 
       console.log('Upload successful:', response.data);
 
-      const imagePaths: any = [];
-
-      response.data.files.map((file: any) => {
-        imagePaths.push(file.path);
-      })
-
-      setFormValues((prevValues: any) => ({
-        ...prevValues,
-        images: imagePaths
-      }))
-
-
       return { success: true, data: response.data }; // Return success
     } catch (error) {
       console.error('Error uploading:', error);
       return { success: false, error }; // Return failure
     }
+  }
+
+  const handleRemoveImage = (index: number) => {
+    setSelectedImages((prevImages) => prevImages.filter((_, i) => i !== index))
   }
 
   function HandleTableData(data: any) {
@@ -130,35 +163,69 @@ export default function PropertyUpload() {
   async function submitHandler(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const uploadResponse = await handleUpload();
-    if (uploadResponse.success) {
-      console.log(formValues)
-      axios.post('http://localhost:8080/createproperty', {
-        ...formValues
-      })
-        .then(res => {
-          if (res.data.success == true) {
+    try {
+      const uploadResponse = await handleUpload();
+      if (uploadResponse.success) {
+        // Access the updated formValues after the image upload
+        const imagePaths = uploadResponse.data.files.map((file: any) => file.path);
+        console.log(imagePaths);
 
-            alert("lesgoo!");
-          }
-        })
-        .catch(err => console.log(err))
-    }
-    else {
-      alert("Couldn't upload images")
+        const updatedValues = {
+          ...formValues,
+          images: imagePaths
+        };
+
+        console.log("Updated values:", updatedValues);
+
+        // Perform the axios POST request with the updated values
+        const res = await axios.post('http://localhost:8080/createproperty', updatedValues);
+        console.log(res);
+        if (res.data.success) {
+          alert("Success!");
+        }
+      } else {
+        alert("Couldn't upload images");
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert("An error occurred while submitting the form");
     }
   }
 
+
   function appendData() {
+
+    const newEntry = {
+      heading,
+      description,
+      data: (currentIndex == 0 ? tableData : chartData) || ""
+    }
+
     setFormValues((prevState: any) => ({
       ...prevState,
       additional: {
         ...prevState.additional,
-        [currentIndex == 0 ? `table-${tableIndex}` : `chart-${chartIndex}`]: currentIndex == 0 ? tableData : chartData
+        [currentIndex == 0 ? `table-${tableIndex}` : `chart-${chartIndex}`]: newEntry,
       }
     }))
     currentIndex == 0 ? setTableIndex(tableIndex + 1) : setChartIndex(chartIndex + 1)
 
+    setHeading("");
+    setDescription("");
+
+  }
+
+  function handleRemoveTool(toolkey: string) {
+    setFormValues((prevValues: any) => {
+      const updatedAdditional = { ...prevValues.additional };
+
+      delete updatedAdditional[toolkey];
+
+      return {
+        ...prevValues,
+        additional: updatedAdditional
+      }
+    })
   }
 
   const components = [
@@ -174,15 +241,13 @@ export default function PropertyUpload() {
   return (
 
     <div className="">
-      <div className="grid grid-cols-2">
+      <div className="grid grid-cols-1 lg:grid-cols-2">
 
         <div className="">
           <form onSubmit={submitHandler} className=" mt-14 max-w-screen-md mx-auto">
             <div className="relative z-0 w-full mb-5 group">
               <label className="block mb-2 text-sm font-medium text-gray-900">Building Name</label>
               <input name="building_name" value={formValues.building_name} onChange={handleChange} type="text" className="shadow-sm  border border-gray-500 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 " placeholder=" " required />
-
-
             </div>
             <div className="grid md:grid-cols-4 md:gap-6 mb-5">
               <div className="relative z-0 w-full mb-0 group">
@@ -254,20 +319,39 @@ export default function PropertyUpload() {
             <div className="relative z-0 w-full mb-8 group border-2 max-h-96 overflow-y-auto border-gray-700 rounded-md">
 
               {selectedImages.map((image, index) => (
-                <div key={index}>
+                <div key={index} className="relative inline-block">
                   <Image
                     src={image}
-                    className='object-cover h-1/2 w-1/2 rounded-lg m-3'
+                    className="object-cover h-1/2 w-1/2 rounded-lg m-3"
                     alt={`Image ${index}`}
                     width={500} // Adjust as needed
                     height={200} // Adjust as needed
                   />
+                  <button
+                    type='button'
+                    onClick={() => handleRemoveImage(index)}
+                    className="absolute top-0 right-0 mt-2 mr-2 bg-red-500 text-white px-2 py-1 rounded-md text-sm hover:bg-red-600 focus:outline-none focus:bg-red-600"
+                  >
+                    Remove
+                  </button>
                 </div>
               ))}
             </div>
 
             <div className='text-center'>
               <button type='button' className='py-2 px-4 border border-black rounded-lg hover:bg-slate-500 hover:text-white hover:border-transparent' onClick={toggleComponent}>Toggle ToolBox</button>
+              <div className="relative z-0 w-full mb-5 group">
+                <label className="block mb-2 text-sm text-start font-medium text-gray-900">Heading</label>
+                <input name="heading" value={heading} onChange={e => setHeading(e.target.value)} type="text" className="shadow-sm  border border-gray-500 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 " placeholder=" " />
+
+
+              </div>
+              <div className="relative z-0 w-full mb-5 group">
+                <label className="block mb-2 text-sm text-start font-medium text-gray-900">Desciption</label>
+                <textarea name="description" value={description} onChange={e => setDescription(e.target.value)} className="shadow-sm  border border-gray-500 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 " placeholder=" " ></textarea>
+
+
+              </div>
               <div className="border-2 border-gray-600 rounded-lg p-4 m-4">{components[currentIndex]}</div>
             </div>
 
@@ -342,86 +426,103 @@ export default function PropertyUpload() {
               </div>
             </div>
             <div className="chart p-4">
+
               {
                 Object.keys(formValues.additional).map(key => {
                   if (key.startsWith("chart-")) {
-                    const chartData = formValues.additional[key];
+                    const chartData = formValues.additional[key].data;
+                    console.log(chartData)
                     if (chartData && chartData.labels && chartData.values) {
                       return (
-                        <Bar
-                          key={key} // Make sure to set a unique key for each chart
-                          options={{
-                            responsive: true,
-                            plugins: {
-                              legend: {
-                                position: 'top' as const,
-                              },
-                              title: {
-                                display: true,
-                                color: 'black',
-                                text: 'Rental Yield Growth',
-                                padding: 10,
-                                fullSize: true,
-                                font: {
-                                  weight: 'bold',
-                                  size: 24
-                                }
-                              },
-                            },
-                          }}
-                          data={{
-                            labels: chartData.labels,
-                            datasets: [
-                              {
-                                label: 'Growth Yield',
-                                data: chartData.values.map((value: any) => parseInt(value)),
-                                backgroundColor: ['#50C878', '#228B22'],
-                                barPercentage: 0.5,
-                              },
-                            ],
-                          }}
-                        />
+                        <div className="border-black hover:border p-2 hover:rounded-lg">
+                          <h1 className='font-bold text-lg text-green-500'>{formValues.additional[key].heading}</h1>
+                          <p className=''>{formValues.additional[key].description}</p>
+                          <div className="relative w-full h-full">
+                            <Bar
+                              key={key} // Make sure to set a unique key for each chart
+                              className=''
+                              options={{
+                                responsive: true,
+                                plugins: {
+                                  legend: {
+                                    position: 'top' as const,
+                                  },
+                                  title: {
+                                    display: true,
+                                    color: 'black',
+                                    text: 'Rental Yield Growth',
+                                    padding: 10,
+                                    fullSize: true,
+                                    font: {
+                                      weight: 'bold',
+                                      size: 24
+                                    }
+                                  },
+                                },
+                              }}
+                              data={{
+                                labels: chartData.labels,
+                                datasets: [
+                                  {
+                                    label: 'Growth Yield',
+                                    data: chartData.values.map((value: any) => parseFloat(value)),
+                                    backgroundColor: ['#50C878', '#228B22'],
+                                    barPercentage: 0.5,
+                                  },
+                                ],
+                              }}
+                            />
+                            <button
+                              onClick={() => handleRemoveTool(key)}
+                              className="absolute top-0 right-0 mt-2 mr-2 bg-red-500 text-white px-2 py-1 rounded-md text-sm hover:bg-red-600 focus:outline-none focus:bg-red-600"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
                       );
                     }
                   }
                   else if (key.startsWith("table-")) {
-                    const tableData = formValues.additional[key];
+                    const tableData = formValues.additional[key].data;
                     if (tableData) {
                       return (
-                        <div className="my-4 overflow-auto">
-                          <table className="table-fixed rounded-lg border-collapse bg-white">
-                            <tbody>
-                              {tableData.map((row: any, rowIndex: number) => (
-                                rowIndex == 0 ? (
-                                  <tr key={rowIndex}>
-                                    {row.map((cell: any, colIndex: number) => (
-                                      <th className="border border-black bg-green-500 text-white px-4 py-2" key={colIndex}>
-                                        <input
-                                          type="text"
-                                          className="bg-transparent border-none w-full text-center"
-                                          value={cell}
-                                        />
-                                      </th>
-                                    ))}
-                                  </tr>
-                                )
-                                  :
-                                  (
+                        <div className="my-4 overflow-auto border-black hover:border p-2 hover:rounded-lg">
+                          <div className="relative w-full h-full">
+                            <h1 className='font-bold text-lg text-green-500'>{formValues.additional[key].heading}</h1>
+                            <p className=''>{formValues.additional[key].description}</p>
+                            <table className="table-fixed rounded-lg border-collapse bg-white">
+                              <tbody>
+                                {tableData.map((row: any, rowIndex: number) => (
+                                  rowIndex == 0 ? (
                                     <tr key={rowIndex}>
                                       {row.map((cell: any, colIndex: number) => (
-                                        <td className="border border-black px-4 py-2" key={colIndex}>
-                                          <input
-                                            type="text"
-                                            className="bg-transparent border-none w-full text-center"
-                                            value={cell}
-                                          />
-                                        </td>
+                                        <th className="border border-black bg-green-500 text-white px-4 py-2" key={colIndex}>
+                                          {cell}
+                                        </th>
                                       ))}
                                     </tr>
                                   )
-                              ))}
-                            </tbody>
-                          </table>
+                                    :
+                                    (
+                                      <tr key={rowIndex}>
+                                        {row.map((cell: any, colIndex: number) => (
+                                          <td className="border border-black px-4 py-2" key={colIndex}>
+                                            {cell}
+                                          </td>
+                                        ))}
+                                      </tr>
+                                    )
+                                ))}
+                              </tbody>
+                            </table>
+                            <button
+                              onClick={() => handleRemoveTool(key)}
+                              className="absolute top-0 right-0 mt-2 mr-2 bg-red-500 text-white px-2 py-1 rounded-md text-sm hover:bg-red-600 focus:outline-none focus:bg-red-600"
+                            >
+                              Remove
+                            </button>
+                          </div>
                         </div>
                       );
                     }
