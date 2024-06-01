@@ -17,7 +17,7 @@ import EditSection from '../components/sections/EditSection';
 
 export default function Home() {
 
-  const [activeComponent, setActiveComponent] = useState('edit/asdads');
+  const [activeComponent, setActiveComponent] = useState('properties');
   const handleActiveComponent = (data: string) => {
     setActiveComponent(data)
   }

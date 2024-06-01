@@ -21,7 +21,7 @@ interface CustomRequest extends Request {
 }
 
 var corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: /^http:\/\/localhost:300\d$/,
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
 
@@ -719,4 +719,5 @@ app.post('/signup/investor', async (req, res) => {
 app.listen(port, () => {
   console.log(`Listening on port ${port}...`);
 });
+
 

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import MyTable from '../tools/Table';
 import { Editor } from "@tinymce/tinymce-react";
+import { CategoryScale, Chart } from "chart.js";
 import { Bar } from 'react-chartjs-2';
 import axios from 'axios'
 import { jwtDecode } from 'jwt-decode'
@@ -12,12 +13,16 @@ import MyChart from '../tools/Chart';
 
 export default function PropertyUpload() {
 
+  Chart.register(CategoryScale);
+
   interface chartInterface {
     labels: number[],
     values: number[],
   }
 
   const [user, setUser] = useState<any>("");
+
+
 
   useEffect(() => {
 
@@ -76,6 +81,10 @@ export default function PropertyUpload() {
     userId: ''
   })
 
+  useEffect(() => {
+    console.log(formValues)
+  }, [formValues])
+
   function handleChange(evt: any) {
     const value = evt.target.value;
     setFormValues({
@@ -125,6 +134,8 @@ export default function PropertyUpload() {
       setSelectedImages(prevImages => [...prevImages, ...newImagesArray]);
 
     }
+
+    console.log(formValues)
   }
 
   async function handleUpload() {
@@ -133,13 +144,6 @@ export default function PropertyUpload() {
       console.log("Response" + response);
 
       console.log('Upload successful:', response.data);
-
-      const imagePaths = response.data.files.map((file: any) => file.path);
-
-      setFormValues((prevValues: any) => ({
-        ...prevValues,
-        images: imagePaths
-      }))
 
       return { success: true, data: response.data }; // Return success
     } catch (error) {
@@ -157,26 +161,37 @@ export default function PropertyUpload() {
   }
 
   async function submitHandler(e: FormEvent<HTMLFormElement>) {
-
     e.preventDefault();
 
-    const uploadResponse = await handleUpload();
-    if (uploadResponse.success) {
-      console.log(formValues)
-      axios.post('http://localhost:8080/createproperty', {
-        ...formValues
-      })
-        .then(res => {
-          if (res.data.success == true) {
-            alert("lesgoo!");
-          }
-        })
-        .catch(err => console.log(err))
-    }
-    else {
-      alert("Couldn't upload images")
+    try {
+      const uploadResponse = await handleUpload();
+      if (uploadResponse.success) {
+        // Access the updated formValues after the image upload
+        const imagePaths = uploadResponse.data.files.map((file: any) => file.path);
+        console.log(imagePaths);
+
+        const updatedValues = {
+          ...formValues,
+          images: imagePaths
+        };
+
+        console.log("Updated values:", updatedValues);
+
+        // Perform the axios POST request with the updated values
+        const res = await axios.post('http://localhost:8080/createproperty', updatedValues);
+        console.log(res);
+        if (res.data.success) {
+          alert("Success!");
+        }
+      } else {
+        alert("Couldn't upload images");
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert("An error occurred while submitting the form");
     }
   }
+
 
   function appendData() {
 
@@ -233,8 +248,6 @@ export default function PropertyUpload() {
             <div className="relative z-0 w-full mb-5 group">
               <label className="block mb-2 text-sm font-medium text-gray-900">Building Name</label>
               <input name="building_name" value={formValues.building_name} onChange={handleChange} type="text" className="shadow-sm  border border-gray-500 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 " placeholder=" " required />
-
-
             </div>
             <div className="grid md:grid-cols-4 md:gap-6 mb-5">
               <div className="relative z-0 w-full mb-0 group">
@@ -452,7 +465,7 @@ export default function PropertyUpload() {
                                 datasets: [
                                   {
                                     label: 'Growth Yield',
-                                    data: chartData.values.map((value: any) => parseInt(value)),
+                                    data: chartData.values.map((value: any) => parseFloat(value)),
                                     backgroundColor: ['#50C878', '#228B22'],
                                     barPercentage: 0.5,
                                   },

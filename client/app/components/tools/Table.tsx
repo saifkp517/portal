@@ -23,14 +23,14 @@ export default function MyTable({ TableData }: any) {
 
   const renderGrid = () => {
     const grid = [];
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 20; i++) {
       const row = [];
-      for (let j = 0; j < 10; j++) {
+      for (let j = 0; j < 20; j++) {
         const index = i * 5 + j;
         row.push(
           <div
             key={index}
-            className={`border border-black h-4 w-4 m-0.5 rounded-sm ${i <= numRows && j <= numCols ? 'bg-gray-500 border-transparent' : ''}`}
+            className={`border border-black h-2 w-2 m-px rounded-xs ${i <= numRows && j <= numCols ? 'bg-gray-500 border-transparent' : ''}`}
             onMouseEnter={() => handleBoxHover(i , j)}
             onClick={handleGenerateTable}
           >
