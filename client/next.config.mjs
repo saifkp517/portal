@@ -5,6 +5,9 @@ const nextConfig = {
         path: 
             'via.placeholder.com'
         
+    },
+    env: {
+        SERVER_DOMAIN: process.env.SERVER_DOMAIN
     }
 };
 
