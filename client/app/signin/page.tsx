@@ -8,7 +8,7 @@ export default function SignIn() {
     const [password, setPassword] = useState('');
 
     const handleSignIn = () => {
-        axios.post('http://localhost:8080/signin/partner', { email, password })
+        axios.post(`${process.env.SERVER_DOMAIN}/signin/partner`, { email, password })
             .then(response => {
                 const {token} = response.data;
                 localStorage.setItem('token', token);

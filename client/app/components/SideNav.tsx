@@ -19,7 +19,7 @@ export default function SideNav({ sendChangedComponent }: any) {
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        axios.get('http://localhost:8080/authorize', {
+        axios.get(`${process.env.SERVER_DOMAIN}/authorize`, {
             headers: {
                 "Authorization": `${token}`
             }

@@ -30,7 +30,7 @@ export default function EditSection() {
   useEffect(() => {
     const fetchPropertyData = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/property/dc2db305-86f8-4e37-8be8-71be25e04d7a'); // Replace with your API endpoint
+        const response = await axios.get(`${process.env.SERVER_DOMAIN}/property/dc2db305-86f8-4e37-8be8-71be25e04d7a`); // Replace with your API endpoint
         console.log(response.data)
         const data = response.data.property;
         setFormValues({
@@ -102,7 +102,7 @@ export default function EditSection() {
         formData.append('images', image); // Adjust this based on your API's expected field name
       });
 
-      const response = await axios.post('http://localhost:8080/photos/upload', formData);
+      const response = await axios.post(`${process.env.SERVER_DOMAIN}/photos/upload`, formData);
       console.log('Upload successful:', response.data);
 
       const imagePaths: string[] = response.data.files.map((file: any) => file.path);
