@@ -11,7 +11,7 @@ export default function MyProperties({ name, image, location, funded, invamt, ir
     const [propDetails, setPropDetails] = useState<any>([]);
 
     useEffect(() => {
-        axios.get(`${process.env.SERVER_DOMAIN}/properties`)
+        axios.get(`${process.env.NEXT_PUBLIC_SERVER_DOMAIN}/properties`)
         .then(res => {
             console.log(res.data.properties)
             setPropDetails(res.data.properties)

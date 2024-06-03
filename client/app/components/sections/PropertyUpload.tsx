@@ -140,7 +140,7 @@ export default function PropertyUpload() {
 
   async function handleUpload() {
     try {
-      const response = await axios.post(`${process.env.SERVER_DOMAIN}/photos/upload`, uploadImages);
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_DOMAIN}/photos/upload`, uploadImages);
       console.log("Response" + response);
 
       console.log('Upload successful:', response.data);
@@ -178,7 +178,7 @@ export default function PropertyUpload() {
         console.log("Updated values:", updatedValues);
 
         // Perform the axios POST request with the updated values
-        const res = await axios.post(`${process.env.SERVER_DOMAIN}/createproperty`, updatedValues);
+        const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_DOMAIN}/createproperty`, updatedValues);
         console.log(res);
         if (res.data.success) {
           alert("Success!");

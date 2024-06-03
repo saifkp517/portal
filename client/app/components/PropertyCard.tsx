@@ -9,7 +9,7 @@ export default function PropertyCard({ id, name, image, location, funded, invamt
 
     function deletProperty()
     {
-        axios.post(`${process.env.SERVER_DOMAIN}/delete/${id}`)
+        axios.post(`${process.env.NEXT_PUBLIC_SERVER_DOMAIN}/delete/${id}`)
         .then(res => {
             console.log(res);
             alert(res.data.message)
@@ -27,7 +27,7 @@ export default function PropertyCard({ id, name, image, location, funded, invamt
             <div className="static w-80 bg-card border shadow-lg shadow-gray-700 border-blue-300 rounded-lg  ">
                 <div className="flex flex-col items-center">
                     <div className=" w-11/12 m-4 h-48  relative ">
-                        <Image fill unoptimized className="object-fill border border-black rounded-xl" src={`${process.env.SERVER_DOMAIN}/${image}`} alt="" />
+                        <Image fill unoptimized className="object-fill border border-black rounded-xl" src={`${process.env.NEXT_PUBLIC_SERVER_DOMAIN}/${image}`} alt="" />
                     </div>
                     <div className="flex flex-col justify-between px-4">
                         <h5 className="mb-2 text-2xl font-bold    tracking-tighter text-gray-600 line-clamp-1">{name}</h5>

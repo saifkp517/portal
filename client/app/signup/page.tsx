@@ -39,7 +39,7 @@ export default function SignUp() {
         }
 
         // Proceed with sign-up logic
-        axios.post(`${process.env.SERVER_DOMAIN}/signup/partner`, { name, password, email })
+        axios.post(`${process.env.NEXT_PUBLIC_SERVER_DOMAIN}/signup/partner`, { name, password, email })
             .then(response => {
                 window.location.href = '/signin'
             })
