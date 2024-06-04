@@ -11,6 +11,7 @@ export default function Home() {
   useEffect(() => {
     const token = window.localStorage.getItem('token');
     if (token) {
+      axios.get(`${process.env.SERVER_DOMAIN}/authorize`, {
         headers: {
           "Authorization": `${token}`
         }
@@ -23,8 +24,7 @@ export default function Home() {
             console.log("Log In Again")
         })
     }
-    else
-    {
+    else {
       console.log("Please Log In")
     }
   }, [])
