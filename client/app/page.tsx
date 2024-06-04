@@ -4,6 +4,8 @@ import axios from 'axios';
 
 export default function Home() {
 
+  console.log(process.env.NEXT_PUBLIC_SERVER_DOMAIN)
+
   const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
