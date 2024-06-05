@@ -9,7 +9,7 @@ export default function Home() {
   useEffect(() => {
     const token = window.localStorage.getItem('token');
     if (token) {
-      axios.get(`${process.env.SERVER_DOMAIN}/authorize`, {
+      axios.get(`${process.env.NEXT_PUBLIC_SERVER_DOMAIN}/authorize`, {
         headers: {
           "Authorization": `${token}`
         }
