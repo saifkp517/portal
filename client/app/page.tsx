@@ -15,6 +15,7 @@ export default function Home() {
         }
       })
         .then(data => {
+          console.log('test');
           window.location.href = '/dashboard'
         })
         .catch(err => {
