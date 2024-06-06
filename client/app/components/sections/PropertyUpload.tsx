@@ -165,6 +165,7 @@ export default function PropertyUpload() {
 
     try {
       const uploadResponse = await handleUpload();
+      console.log(uploadResponse)
       if (uploadResponse.success) {
         // Access the updated formValues after the image upload
         const imagePaths = uploadResponse.data.files.map((file: any) => file.path);
