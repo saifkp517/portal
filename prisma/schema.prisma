@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Property {
-  id                 String       @id @default(uuid())
+  id                 String   @id @default(uuid())
   building_name      String
   asset_type         String
   investment_size    String
@@ -23,9 +23,11 @@ model Property {
   floorplan          Json?
   tenant_details     Json?
   images             String[]
+  creditriskanalysis String?
+  funded             Int      @default(0)
   tables             Json?
   additional         Json?
-  user               User         @relation(fields: [userId], references: [email])
+  user               User     @relation(fields: [userId], references: [email])
   userId             String
 }
 
@@ -41,12 +43,13 @@ model User {
   password   String
   role       Role
   properties Property[]
+  subscribed Boolean @default(true)
 }
 
 model Investor {
-  id         String     @id @default(uuid())
-  name       String?
-  email      String     @unique
-  password   String?
-  provider   String?
+  id       String  @id @default(uuid())
+  name     String?
+  email    String  @unique
+  password String?
+  provider String?
 }
