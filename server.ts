@@ -21,7 +21,8 @@ interface CustomRequest extends Request {
 }
 
 var corsOptions = {
-  origin: /^http:\/\/localhost:300\d$/,
+  origin: "*",
+  credentials: true,
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
 
@@ -266,6 +267,7 @@ const upload = multer({
 })
 
 app.post('/photos/upload', upload.any(), async (req, res, next) => {
+	console.log('trying to upload');
 
   const files = (req as any).files;
 
