@@ -614,7 +614,7 @@ app.post('/signin/investor', async (req, res) => {
       // For Google OAuth, just check if the provider matches
       if (user.provider !== 'google') {
         return res.status(400).json({
-          message: "Please sign in using your Google account.",
+          message: "Account does not exist, Sign Up!.",
           success: false
         });
       }
@@ -624,7 +624,7 @@ app.post('/signin/investor', async (req, res) => {
       return res.status(200).json({
         message: "Logged in successfully",
         success: true,
-        token
+        token 
       });
     } else {
       // For traditional login, validate the password
@@ -661,7 +661,6 @@ app.post('/signin/investor', async (req, res) => {
     });
   }
 });
-
 
 app.post('/signup/investor', async (req, res) => {
   const { name, email, provider, password } = req.body;

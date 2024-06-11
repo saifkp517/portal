@@ -25,7 +25,7 @@ export default function SideNav({ sendChangedComponent }: any) {
             }
         })
             .then(res => {
-                
+
                 setUser(res.data.user);
             })
             .catch(err => {
@@ -92,6 +92,14 @@ export default function SideNav({ sendChangedComponent }: any) {
                                                 <path fill-rule="evenodd" d="M11.293 3.293a1 1 0 0 1 1.414 0l6 6 2 2a1 1 0 0 1-1.414 1.414L19 12.414V19a2 2 0 0 1-2 2h-3a1 1 0 0 1-1-1v-3h-2v3a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2v-6.586l-.293.293a1 1 0 0 1-1.414-1.414l2-2 6-6Z" clipRule="evenodd" />
                                             </svg>
                                             <span className="flex-1 ms-3 whitespace-nowrap">My Properties</span>
+                                        </a>
+                                    </li>
+                                    <li onClick={() => handleItemClick('meetings')}>
+                                        <a href="#" className={` ${activeComponent === 'meetings' ? 'bg-gray-700 border border-blue-400' : ''} flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group`}>
+                                            <svg className="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75  group-hover:text-gray-900 " aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                                <path fill-rule="evenodd" d="M11.293 3.293a1 1 0 0 1 1.414 0l6 6 2 2a1 1 0 0 1-1.414 1.414L19 12.414V19a2 2 0 0 1-2 2h-3a1 1 0 0 1-1-1v-3h-2v3a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2v-6.586l-.293.293a1 1 0 0 1-1.414-1.414l2-2 6-6Z" clipRule="evenodd" />
+                                            </svg>
+                                            <span className="flex-1 ms-3 whitespace-nowrap">Meetings</span>
                                         </a>
                                     </li>
                                     <li>

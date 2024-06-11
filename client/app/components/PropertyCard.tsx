@@ -1,11 +1,11 @@
 
 // import LocationOnIcon from '@mui/icons-material/LocationOn';
 import Image from "next/image"
+import { useState } from "react";
 import axios from 'axios';
 
-export default function PropertyCard({ id, name, image, location, funded, invamt, irr }: any) {
+export default function PropertyCard({sendChangedComponent, id, name, image, location, funded, invamt, irr }: any) {
 
-    console.log(image)
 
     function deletProperty()
     {
@@ -74,7 +74,7 @@ export default function PropertyCard({ id, name, image, location, funded, invamt
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-5">
-                            <button  className='mx-auto w-full mb-4 py-2 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white tracking-tight'>
+                            <button onClick={() => sendChangedComponent(`edit/${id}`)} className='mx-auto w-full mb-4 py-2 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white tracking-tight'>
                                 Edit
                             </button>
                             <button onClick={deletProperty} className='mx-auto w-full mb-4 py-2 px-4 rounded-lg bg-red-600 hover:bg-red-700 text-white tracking-tight'>

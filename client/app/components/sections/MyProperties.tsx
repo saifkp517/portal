@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { motion } from 'framer-motion';
 import axios from "axios";
 
-export default function MyProperties({ name, image, location, funded, invamt, irr }: any) {
+export default function MyProperties({ sendChangedComponent }: any) {
 
 
     const [propDetails, setPropDetails] = useState<any>([]);
@@ -24,6 +24,7 @@ export default function MyProperties({ name, image, location, funded, invamt, ir
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {propDetails.map((property: any) => (
                 <PropertyCard
+                    sendChangedComponent={sendChangedComponent}
                     key={property.id}
                     id={property.id}
                     name={property.building_name}

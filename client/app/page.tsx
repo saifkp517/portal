@@ -44,7 +44,7 @@ export default function Home() {
       </nav>
 
       {/* hero section */}
-      <section className='flex min-h-screen my-20'>
+      <section className='flex h-screen my-20'>
         <div className="mx-auto font-bold max-w-screen-xl ">
           <p className='mb-10 text-xl text-blue-600 text-center'>PropertyVerse</p>
           <h1 className='text-center text-8xl tracking-tight leading-2 text-gray-800'>Revolutionize Property Management with Our Advanced Dashboard</h1>
