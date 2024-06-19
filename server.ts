@@ -273,6 +273,7 @@ const upload = multer({
 })
 
 app.post('/photos/upload', upload.any(), async (req, res, next) => {
+	console.log('trying to upload');
 
   const files = (req as any).files;
 
