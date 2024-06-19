@@ -9,12 +9,18 @@ import * as jwt from "jsonwebtoken";
 import bodyParser from "body-parser";
 import multer from "multer";
 import nodemailer from 'nodemailer';
+import { createClient } from "redis";
+import { randomInt } from "crypto";
+import dotenv from "dotenv";
 
-const cors = require('cors')
+const cors = require('cors');
+dotenv.config();
 
 const app = express();
+const redisClient = createClient();
 const prisma = new PrismaClient();
 const port = 8080;
+const jwtSecret: string = process.env.JWT_SECRET as string;
 
 interface CustomRequest extends Request {
   user?: any; // Define the user property with any type, you can replace 'any' with the actual type of your user object
@@ -29,6 +35,7 @@ app.use(cookieParser());
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(cors(corsOptions))
+app.options('*', cors(corsOptions));
 
 const user = {
   "user1": "pass",
@@ -104,7 +111,7 @@ app.post('/signin/partner', async (req, res) => {
           name: user.name,
           email: user.email
         },
-        'Secret',
+        jwtSecret,
         { expiresIn: "3 days" }
       )
 
@@ -193,7 +200,7 @@ app.post('/signin/admin', async (req, res) => {
           name: user.name,
           email: user.email
         },
-        'Secret',
+        jwtSecret,
         { expiresIn: "3 days" }
       )
 
@@ -225,7 +232,7 @@ const userAuth = (req: CustomRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers["authorization"];
   if (!authHeader) return res.sendStatus(403);
   const token = authHeader.split(" ")[1];
-  jwt.verify(token, 'Secret', (err, decoded) => {
+  jwt.verify(token, jwtSecret, (err, decoded) => {
     console.log("verifying");
     if (err) return res.sendStatus(403); //invalid token
 
@@ -408,7 +415,7 @@ app.get('/property/:propertyid', async (req, res) => {
         id: propertyid
       }
     })
-    if(property) {
+    if (property) {
       return res.status(200).json({
         property,
         success: true
@@ -477,19 +484,19 @@ const transporter = nodemailer.createTransport({
   debug: true,
   auth: {
     user: "support@propertyverse.co.in",
-    pass: "PropertyVerse",
+    pass: "Propertyverse",
   }
 })
 
-app.post('/notify-mail', async (req, res) => {
+app.post('/otp-mail', async (req, res) => {
 
-  const { emaillist } = req.body;
+  const { email, OTP } = req.body;
 
   console.log('clicked')
   try {
     const info = await transporter.sendMail({
       from: "Support <support@propertyverse.co.in>",
-      to: "saifkp517@gmail.com",
+      to: email,
       subject: "Notification: New Property Added",
       text: "Hello,\n\nA new property has been added to PropertyVerse. Please login to view the latest listings.\n\nThank you,\nThe PropertyVerse Team",
       html: `
@@ -545,8 +552,7 @@ app.post('/notify-mail', async (req, res) => {
         <div class="content">
             <h2>New Property Notification</h2>
             <p>Hello,</p>
-            <p>A new property has been added to PropertyVerse. Please click the button below to view the latest listings:</p>
-            <a href="https://propertyverse.co.in/login" class="button">View Properties</a>
+            <p>Your Registration OTP is: ${OTP}</p>
             <p>Thank you,<br>The PropertyVerse Team</p>
         </div>
     </div>
@@ -558,7 +564,7 @@ app.post('/notify-mail', async (req, res) => {
 
 
     if (info) {
-      console.log("sent successfully" + info.response)
+      res.status(200).send("sent successfully" + info.response)
     }
 
   }
@@ -567,11 +573,15 @@ app.post('/notify-mail', async (req, res) => {
   }
 })
 
-////////////////////////////////////////////email middleware////////////////////////////////////////
+
+//////////////////////////////authorization////////////////////////////////////
 
 app.get('/authorize', userAuth, async (req: CustomRequest, res) => {
   try {
     const userEmail = req.user.email;
+    if (!userEmail) {
+      console.log("no")
+    }
     const user = await prisma.user.findUnique({
       where: {
         email: userEmail
@@ -618,13 +628,12 @@ app.post('/signin/investor', async (req, res) => {
           success: false
         });
       }
-      // Generate JWT or any session management token
-      const token = jwt.sign({ userId: user.id }, 'Secret', { expiresIn: '1h' });
+
 
       return res.status(200).json({
         message: "Logged in successfully",
         success: true,
-        token 
+        user
       });
     } else {
       // For traditional login, validate the password
@@ -637,6 +646,7 @@ app.post('/signin/investor', async (req, res) => {
 
       const isPasswordValid = compareSync(password, user.password!);
 
+
       if (!isPasswordValid) {
         return res.status(400).json({
           message: "Invalid email or password",
@@ -645,12 +655,12 @@ app.post('/signin/investor', async (req, res) => {
       }
 
       // Generate JWT or any session management token
-      const token = jwt.sign({ userId: user.id }, 'Secret', { expiresIn: '1h' });
+      const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '1h' });
 
       return res.status(200).json({
         message: "Logged in successfully",
         success: true,
-        token
+        user
       });
     }
   } catch (error) {
@@ -663,7 +673,7 @@ app.post('/signin/investor', async (req, res) => {
 });
 
 app.post('/signup/investor', async (req, res) => {
-  const { name, email, provider, password } = req.body;
+  const { email, provider, password } = req.body;
 
   try {
     // Check if the user already exists
@@ -672,7 +682,19 @@ app.post('/signup/investor', async (req, res) => {
     });
 
     if (investor) {
-      return res.status(400).send("An account with this email already exists. Please log in.");
+      if (investor.verified == true) {
+        return res.status(400).json({
+          verified: true,
+          message: "An account with this email already exists. Please log in."
+        });
+      }
+      else {
+        return res.status(400).json({
+          verified: false,
+          message: "User Verification"
+        });
+      }
+
     }
 
     // If provider is Google, do not require password
@@ -688,7 +710,6 @@ app.post('/signup/investor', async (req, res) => {
     // Create the user
     investor = await prisma.investor.create({
       data: {
-        name,
         email,
         password: hash,
         provider: provider === "google" ? provider : 'propertyverse'
@@ -700,7 +721,6 @@ app.post('/signup/investor', async (req, res) => {
       success: true,
       user: {
         id: investor.id,
-        name: investor.name,
         email: investor.email,
         provider: investor.provider
       }
@@ -715,7 +735,90 @@ app.post('/signup/investor', async (req, res) => {
   }
 });
 
-app.listen(port, () => {
+app.get('/investor/:investorid', async (req, res) => {
+
+  console.log(req.params.investorid)
+  try {
+    const userData = await prisma.investor.findUnique({
+      where: {
+        id: req.params.investorid
+      }
+    })
+
+    if (!userData) {
+      return res.status(400).send("Invalid user-id")
+    }
+
+    return res.status(200).json({
+      userData: userData
+    })
+    
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false
+    });
+  }
+})
+
+
+////////////////////////////otp generation and retrieval////////////////////////
+app.post('/generate-otp', async (req, res) => {
+
+  const generateOtp = () => {
+    return randomInt(1000, 9999).toString();
+  }
+
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).send("User Email is required!")
+  }
+
+  const otp = generateOtp();
+  try {
+    await redisClient.setEx(email, 300, otp)
+    res.status(200).send({ otp })
+  } catch (err) {
+    res.status(500).send('Error generating OTP');
+  }
+})
+
+app.post('/verify-otp', async (req, res) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) {
+    return res.status(400).send("User Email and OTP is required!")
+  }
+
+  try {
+    //fetch otp from redis
+    const storedOtp = await redisClient.get(email)
+    console.log(storedOtp, otp, email);
+
+    if (storedOtp === null) {
+      res.status(400).send("OTP has expired, click on Resend")
+    }
+
+    if (storedOtp === otp) {
+      await prisma.investor.update({
+        where: { email: email },
+        data: { verified: true }
+      })
+      res.status(200).send("OTP verified Successfully");
+    }
+    else {
+      res.status(400).send("Invalid OTP");
+    }
+  }
+  catch (err) {
+    res.status(500).send('Error verifying OTP');
+  }
+})
+
+app.listen(port, async () => {
+  const connect = await redisClient.connect();
+  if (connect)
+    console.log("Redis Connected")
   console.log(`Listening on port ${port}...`);
 });
 

@@ -16,9 +16,9 @@ post http://localhost:8080/signin/investor
 Content-Type: application/json
 
 {
-    "email": "test@gmail.com",
-    "password": "pass",
-    "provider": "google"
+    "email": "saifkhan501721@gmail.com",
+    "password": "123456",
+    "provider": "propertyverse"
 }
 
 ###
