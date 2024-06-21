@@ -4,7 +4,6 @@ import Head from 'next/head'
 import Image from 'next/image';
 import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import MyTable from '../tools/Table';
-import { Editor } from "@tinymce/tinymce-react";
 import { CategoryScale, Chart } from "chart.js";
 import { Bar } from 'react-chartjs-2';
 import axios from 'axios'
