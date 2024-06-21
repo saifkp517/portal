@@ -1,0 +1,9 @@
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Deploy Server on EC2
+    runs-on: ubuntu-latest

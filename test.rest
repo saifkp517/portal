@@ -24,3 +24,12 @@ Content-Type: application/json
 ###
 
 post http://localhost:8080/notify-mail
+
+###
+
+post http://localhost:8080/oauth/investor
+Content-Type: application/json
+
+{
+    "email": "test@gmail.com"
+}

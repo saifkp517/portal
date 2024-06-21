@@ -180,47 +180,34 @@ app.post('/signup/admin', async (req, res) => {
 
 //signin
 app.post('/signin/admin', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, provider } = req.body;
 
   try {
     const user = await prisma.user.findUnique({ where: { email: email } })
 
     if (!user) {
       return res.status(404).json({
-        message: "Account with this Phone Number does not exist!",
+        message: "Account with this Email address does not exist!",
         success: false
       })
     }
 
     let passwordMatch = compareSync(password, user.password);
 
-    if (passwordMatch) {
-      let token = jwt.sign(
-        {
-          name: user.name,
-          email: user.email
-        },
-        jwtSecret,
-        { expiresIn: "3 days" }
-      )
+    if (provider)
 
-      let result = {
-        name: user.name,
-        email: user.email,
-        token: `Bearer ${token}`
+      if (passwordMatch) {
+        return res.status(200).json({
+          message: "Successfully Logged In!",
+          user: user
+        })
       }
-
-      return res.status(200).json({
-        ...result,
-        message: "Successfully Logged In!"
-      })
-    }
-    else {
-      return res.status(401).json({
-        message: "Invalid Credentials!",
-        success: false
-      })
-    }
+      else {
+        return res.status(401).json({
+          message: "Invalid Credentials!",
+          success: false
+        })
+      }
 
 
   }
@@ -273,7 +260,7 @@ const upload = multer({
 })
 
 app.post('/photos/upload', upload.any(), async (req, res, next) => {
-	console.log('trying to upload');
+  console.log('trying to upload');
 
   const files = (req as any).files;
 
@@ -610,8 +597,11 @@ app.post('/signin/investor', async (req, res) => {
 
   try {
     // Find the user by email
-    let user = await prisma.investor.findUnique({
-      where: { email }
+    let user = await prisma.investor.findFirst({
+      where: {
+        email,
+        provider: "propertyverse"
+      }
     });
 
     if (!user) {
@@ -620,50 +610,62 @@ app.post('/signin/investor', async (req, res) => {
         success: false
       });
     }
-
-    if (provider === 'google') {
-      // For Google OAuth, just check if the provider matches
-      if (user.provider !== 'google') {
-        return res.status(400).json({
-          message: "Account does not exist, Sign Up!.",
-          success: false
-        });
-      }
-
-
-      return res.status(200).json({
-        message: "Logged in successfully",
-        success: true,
-        user
-      });
-    } else {
-      // For traditional login, validate the password
-      if (user.provider !== 'propertyverse') {
-        return res.status(400).json({
-          message: "Please sign in using your correct method.",
-          success: false
-        });
-      }
-
-      const isPasswordValid = compareSync(password, user.password!);
-
-
-      if (!isPasswordValid) {
-        return res.status(400).json({
-          message: "Invalid email or password",
-          success: false
-        });
-      }
-
-      // Generate JWT or any session management token
-      const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '1h' });
-
-      return res.status(200).json({
-        message: "Logged in successfully",
-        success: true,
-        user
+    // For traditional login, validate the password
+    if (user.provider !== 'propertyverse') {
+      return res.status(400).json({
+        message: "Please sign in using your correct method.",
+        success: false
       });
     }
+
+    const isPasswordValid = compareSync(password, user.password!);
+
+    if (!isPasswordValid) {
+      return res.status(400).json({
+        message: "Invalid email or password",
+        success: false
+      });
+    }
+
+    // Generate JWT or any session management token
+    const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '1h' });
+
+    return res.status(200).json({
+      message: "Logged in successfully",
+      success: true,
+      user
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false
+    });
+  }
+});
+
+app.post('/oauth/investor', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    let user = await prisma.investor.findFirst({
+      where: {
+        email,
+        provider: "google"
+      }
+    });
+
+    if (!user) {
+      user = await prisma.investor.create({
+        data: {
+          email,
+          provider: "google"
+        }
+      });
+    }
+    
+    return res.status(200).json({ success: true, user });
+
   } catch (error) {
     console.error(error);
     return res.status(500).json({
@@ -674,12 +676,15 @@ app.post('/signin/investor', async (req, res) => {
 });
 
 app.post('/signup/investor', async (req, res) => {
-  const { email, provider, password } = req.body;
+  const { email, password } = req.body;
 
   try {
     // Check if the user already exists
-    let investor = await prisma.investor.findUnique({
-      where: { email }
+    let investor = await prisma.investor.findFirst({
+      where: {
+        email,
+        provider: "google"
+      }
     });
 
     if (investor) {
@@ -695,25 +700,20 @@ app.post('/signup/investor', async (req, res) => {
           message: "User Verification"
         });
       }
-
     }
 
-    // If provider is Google, do not require password
     let hash = null;
-    if (provider !== "google") {
-      if (!password) {
-        return res.status(400).send("Password is required for non-Google signups.");
-      }
-      // Hash the password for traditional signup
-      hash = hashSync(password, genSaltSync(10));
+    if (!password) {
+      return res.status(400).send("Password is required.");
     }
-
+    // Hash the password for traditional signup
+    hash = hashSync(password, genSaltSync(10));
     // Create the user
     investor = await prisma.investor.create({
       data: {
         email,
         password: hash,
-        provider: provider === "google" ? provider : 'propertyverse'
+        provider: "propertyverse"
       }
     });
 
@@ -753,7 +753,7 @@ app.get('/investor/:investorid', async (req, res) => {
     return res.status(200).json({
       userData: userData
     })
-    
+
   } catch (error) {
     console.error(error);
     return res.status(500).json({
@@ -801,8 +801,8 @@ app.post('/verify-otp', async (req, res) => {
     }
 
     if (storedOtp === otp) {
-      await prisma.investor.update({
-        where: { email: email },
+      await prisma.investor.updateMany({
+        where: { email: email, provider: "google" },
         data: { verified: true }
       })
       res.status(200).send("OTP verified Successfully");
