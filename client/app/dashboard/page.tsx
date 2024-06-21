@@ -4,7 +4,6 @@ import Head from 'next/head'
 import Image from 'next/image';
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import MyTable from '../components/tools/Table';
-import { Editor } from "@tinymce/tinymce-react";
 import axios from 'axios'
 import MyChart from '../components/tools/Chart';
 import SideNav from '../components/SideNav';
