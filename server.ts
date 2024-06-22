@@ -26,10 +26,28 @@ interface CustomRequest extends Request {
   user?: any; // Define the user property with any type, you can replace 'any' with the actual type of your user object
 }
 
+const allowedOrigins = ["https://www.propertyverse.co.in", "https://dashboard.propertyverse.co.in", "http://localhost:3000"]
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
+
 var corsOptions = {
   origin: ["https://www.propertyverse.co.in", "https://dashboard.propertyverse.co.in", "http://localhost:3000"],
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
+
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'http://localhost:4200');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
 
 app.use(cookieParser());
 app.use(bodyParser.json())
