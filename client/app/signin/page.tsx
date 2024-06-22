@@ -17,9 +17,7 @@ export default function SignIn() {
             .catch(error => {
                 console.error('Sign in error:', error);
             });
-    };
-
-    
+    }    
 
     return (
         <div className="h-screen bg-gray-800 text-gray-900 flex justify-center">

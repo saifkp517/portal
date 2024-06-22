@@ -50,7 +50,7 @@ model Investor {
   id       String  @id @default(uuid())
   name     String?
   phoneno  String?
-  email    String @unique
+  email    String?
   password String?
   provider String?
   verified Boolean @default(false)

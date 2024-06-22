@@ -486,68 +486,97 @@ app.post('/otp-mail', async (req, res) => {
       from: "Support <support@propertyverse.co.in>",
       to: email,
       subject: "Notification: New Property Added",
+
       text: "Hello,\n\nA new property has been added to PropertyVerse. Please login to view the latest listings.\n\nThank you,\nThe PropertyVerse Team",
       html: `
       <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New Property Notification</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .logo {
-            width: 150px;
-            height: auto;
-        }
-        .content {
-            padding: 20px;
-            background-color: #f9f9f9;
-            border-radius: 8px;
-        }
-        .button {
-            display: inline-block;
-            background-color: #007bff;
-            color: #ffffff;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <img src="https://yourdomain.com/assets/logo.png" alt="PropertyVerse Logo" class="logo">
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>OTP Verification - PropertyVerse</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+                color: #333333;
+                margin: 0;
+                padding: 0;
+            }
+            .container {
+                width: 100%;
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: #ffffff;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+                background-color: #2e86de;
+                color: #ffffff;
+                padding: 20px;
+                text-align: center;
+            }
+            .header h1 {
+                margin: 0;
+                font-size: 24px;
+            }
+            .content {
+                padding: 20px;
+            }
+            .content p {
+                font-size: 16px;
+                line-height: 1.5;
+            }
+            .otp {
+                display: block;
+                width: max-content;
+                margin: 20px auto;
+                padding: 10px 20px;
+                font-size: 24px;
+                font-weight: bold;
+                background-color: #2e86de;
+                color: #ffffff;
+                border-radius: 4px;
+                text-align: center;
+            }
+            .footer {
+                background-color: #f4f4f4;
+                padding: 20px;
+                text-align: center;
+                font-size: 12px;
+                color: #777777;
+            }
+            .footer a {
+                color: #2e86de;
+                text-decoration: none;
+            }
+            .footer a:hover {
+                text-decoration: underline;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>PropertyVerse</h1>
+            </div>
+            <div class="content">
+                <p>Hello,</p>
+                <p>Your One-Time Password (OTP) for verifying your account on PropertyVerse is:</p>
+                <div class="otp">${OTP}</div>
+                <p>Please enter this code on the verification page to complete the process. The OTP is valid for 10 minutes.</p>
+                <p>If you did not request this, please ignore this email or contact our support team.</p>
+                <p>Thank you,<br>The PropertyVerse Team</p>
+            </div>
+            <div class="footer">
+                <p>&copy; 2024 PropertyVerse. All rights reserved.</p>
+                <p><a href="https://propertyverse.co.in">Visit our website</a> | <a href="mailto:support@propertyverse.co.in">Contact Support</a></p>
+            </div>
         </div>
-        <div class="content">
-            <h2>New Property Notification</h2>
-            <p>Hello,</p>
-            <p>Your Registration OTP is: ${OTP}</p>
-            <p>Thank you,<br>The PropertyVerse Team</p>
-        </div>
-    </div>
-</body>
-</html>
-
-      `
+    </body>
+    </html>`
     });
 
 
@@ -663,7 +692,7 @@ app.post('/oauth/investor', async (req, res) => {
         }
       });
     }
-    
+
     return res.status(200).json({ success: true, user });
 
   } catch (error) {
@@ -738,7 +767,6 @@ app.post('/signup/investor', async (req, res) => {
 
 app.get('/investor/:investorid', async (req, res) => {
 
-  console.log(req.params.investorid)
   try {
     const userData = await prisma.investor.findUnique({
       where: {
@@ -763,6 +791,37 @@ app.get('/investor/:investorid', async (req, res) => {
   }
 })
 
+app.post('/investor/update', async(req, res) => {
+  try {
+    const {name, phoneno, id} = req.body;
+
+    const userUpdate = await prisma.investor.update({
+      where: {
+        id
+      },
+      data: {
+        name,
+        phoneno
+      }
+    })
+
+    if (!userUpdate) {
+      return res.status(400).send("Invalid user-id")
+    }
+
+    return res.status(200).json({
+      message: "Successfully added details"
+    })
+
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false
+    });
+  }
+})
 
 ////////////////////////////otp generation and retrieval////////////////////////
 app.post('/generate-otp', async (req, res) => {
