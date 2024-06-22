@@ -27,7 +27,7 @@ interface CustomRequest extends Request {
 }
 
 var corsOptions = {
-  origin: ["https://www.propertyverse.co.in", "dashboard.propertyverse.co.in", "http://localhost:3000"],
+  origin: ["https://www.propertyverse.co.in", "https://dashboard.propertyverse.co.in", "http://localhost:3000"],
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
 
