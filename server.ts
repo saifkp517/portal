@@ -624,7 +624,6 @@ app.post('/otp-sms', async (req, res) => {
 
 
   try {
-    const rateLimit = await client.verify.v2.services
 
     await client.messages.create({
       body: `PropertyVerse Registration OTP: ${OTP}. Do not share this code with anyone, our employers do not ask for OTP`,
