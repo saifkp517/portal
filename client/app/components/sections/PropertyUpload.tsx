@@ -184,6 +184,7 @@ export default function PropertyUpload() {
           alert("Success!");
         }
       } else {
+        console.log(uploadResponse.error)
         alert("Couldn't upload images");
       }
     } catch (error) {

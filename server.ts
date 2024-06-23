@@ -28,7 +28,7 @@ interface CustomRequest extends Request {
 
 const allowedOrigins = ["https://www.propertyverse.co.in", "https://dashboard.propertyverse.co.in", "http://localhost:3000"]
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
+  const origin: any = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin);
   }
@@ -43,7 +43,7 @@ var corsOptions = {
 }
 
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:4200');
+  res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   next();
@@ -101,8 +101,8 @@ app.post('/signup/partner', async (req, res) => {
       success: false
     })
   }
-  catch (e) {
-    console.log(e);
+  catch (error) {
+    console.log(error);
   }
 })
 
@@ -153,7 +153,7 @@ app.post('/signin/partner', async (req, res) => {
 
 
   }
-  catch (e) { console.log(e) }
+  catch (error) { console.log(error) }
 })
 
 
@@ -190,8 +190,8 @@ app.post('/signup/admin', async (req, res) => {
       success: false
     })
   }
-  catch (e) {
-    console.log(e);
+  catch (error) {
+    console.log(error);
   }
 })
 
@@ -229,7 +229,7 @@ app.post('/signin/admin', async (req, res) => {
 
 
   }
-  catch (e) { console.log(e) }
+  catch (error) { console.log(error) }
 })
 
 //middleware to authorize users by role
@@ -337,10 +337,10 @@ app.post('/createproperty', async (req, res) => {
       })
     }
   }
-  catch (e) {
-    console.log(e);
+  catch (error) {
+    console.log(error);
     return res.status(500).json({
-      message: "Internal server error",
+      message: "Internal server error" + error,
       success: false
     });
   }
@@ -383,10 +383,10 @@ app.post('/update-property', async (req, res) => {
       })
     }
   }
-  catch (e) {
-    console.log(e);
+  catch (error) {
+    console.log(error);
     return res.status(500).json({
-      message: "Internal server error",
+      message: "Internal server error" + error,
       success: false
     });
   }
@@ -402,10 +402,10 @@ app.get('/properties', async (req, res) => {
       })
     }
   }
-  catch (e) {
-    console.log(e);
+  catch (error) {
+    console.log(error);
     return res.status(500).json({
-      message: "Internal server error",
+      message: "Internal server error" + error,
       success: false
     });
   }
@@ -428,10 +428,10 @@ app.get('/property/:propertyid', async (req, res) => {
       })
     }
   }
-  catch (e) {
-    console.log(e);
+  catch (error) {
+    console.log(error);
     return res.status(500).json({
-      message: "Internal server error",
+      message: "Internal server error" + error,
       success: false
     });
   }
@@ -465,10 +465,10 @@ app.post('/delete/:propertyid', async (req, res) => {
     }
 
   }
-  catch (e) {
-    console.log(e);
+  catch (error) {
+    console.log(error);
     return res.status(500).json({
-      message: "Internal server error",
+      message: "Internal server error" + error,
       success: false
     });
   }
@@ -494,6 +494,8 @@ const transporter = nodemailer.createTransport({
   }
 })
 
+//use for newsletter instead
+/**
 app.post('/otp-mail', async (req, res) => {
 
   const { email, OTP } = req.body;
@@ -607,6 +609,40 @@ app.post('/otp-mail', async (req, res) => {
     console.log(err)
   }
 })
+   */
+
+//////////////////////twilio config ///////////////////////////////////////////
+import twilio from "twilio";
+
+const accountSid = "ACc2bff54ed26198e5d8a295bdb090c47d";
+const authToken = "d7d9456ec328290a46207be977ff056a";
+const client = twilio(accountSid, authToken);
+
+app.post('/otp-sms', async (req, res) => {
+
+  const { phone, OTP } = req.body;
+
+
+  try {
+
+
+    await client.messages.create({
+      body: `PropertyVerse Registration OTP: ${OTP}. Do not share this code with anyone, our employers do not ask for OTP`,
+      from: "+18702769764",
+      to: `+91${phone}`,
+    });
+    console.log(OTP, phone)
+    // console.log(message.body);
+    // res.status(200).send(message.body)
+
+  } catch (error) {
+    console.log("Twilio Error:" + error);
+    return res.status(500).json({
+      message: "Internal  error" + error,
+      success: false,
+    });
+  }
+})
 
 
 //////////////////////////////authorization////////////////////////////////////
@@ -628,10 +664,10 @@ app.get('/authorize', userAuth, async (req: CustomRequest, res) => {
         success: true
       })
     }
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
+    console.log(error);
     return res.status(500).json({
-      message: "Internal server error",
+      message: "Internal server error" + error,
       success: false
     });
   }
@@ -685,7 +721,7 @@ app.post('/signin/investor', async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      message: "Internal server error",
+      message: "Internal server error" + error,
       success: false
     });
   }
@@ -716,7 +752,7 @@ app.post('/oauth/investor', async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      message: "Internal server error",
+      message: "Internal server error" + error,
       success: false
     });
   }
@@ -777,7 +813,7 @@ app.post('/signup/investor', async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      message: "Internal server error",
+      message: "Internal server error" + error,
       success: false
     });
   }
@@ -803,15 +839,15 @@ app.get('/investor/:investorid', async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      message: "Internal server error",
+      message: "Internal server error" + error,
       success: false
     });
   }
 })
 
-app.post('/investor/update', async(req, res) => {
+app.post('/investor/update', async (req, res) => {
   try {
-    const {name, phoneno, id} = req.body;
+    const { name, phoneno, id } = req.body;
 
     const userUpdate = await prisma.investor.update({
       where: {
@@ -835,7 +871,7 @@ app.post('/investor/update', async(req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      message: "Internal server error",
+      message: "Internal server error" + error,
       success: false
     });
   }

@@ -5,6 +5,7 @@ import axios from 'axios';
 
 export default function SignUp() {
     const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
     const [name, setName] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -37,6 +38,8 @@ export default function SignUp() {
             setPasswordMatchError('Passwords do not match');
             return;
         }
+
+        if (phone )
 
         // Proceed with sign-up logic
         axios.post(`${process.env.NEXT_PUBLIC_SERVER_DOMAIN}/signup/partner`, { name, password, email })
