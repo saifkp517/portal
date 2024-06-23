@@ -137,6 +137,7 @@ export default function PropertyUpload() {
     console.log(formValues)
   }
 
+
   async function handleUpload() {
     try {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_DOMAIN}/photos/upload`, uploadImages);
@@ -164,8 +165,6 @@ export default function PropertyUpload() {
 
     try {
       const uploadResponse = await handleUpload();
-      console.log(uploadResponse)
-      if (uploadResponse.success) {
         // Access the updated formValues after the image upload
         const imagePaths = uploadResponse.data.files.map((file: any) => file.path);
         console.log(imagePaths);
@@ -183,10 +182,6 @@ export default function PropertyUpload() {
         if (res.data.success) {
           alert("Success!");
         }
-      } else {
-        console.log(uploadResponse.error)
-        alert("Couldn't upload images");
-      }
     } catch (error) {
       console.error('Error submitting form:', error);
       alert("An error occurred while submitting the form");
