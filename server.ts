@@ -614,8 +614,8 @@ app.post('/otp-mail', async (req, res) => {
 //////////////////////twilio config ///////////////////////////////////////////
 import twilio from "twilio";
 
-const accountSid = "ACc2bff54ed26198e5d8a295bdb090c47d";
-const authToken = "d7d9456ec328290a46207be977ff056a";
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.AUTH_TOKEN;
 const client = twilio(accountSid, authToken);
 
 app.post('/otp-sms', async (req, res) => {
@@ -624,7 +624,7 @@ app.post('/otp-sms', async (req, res) => {
 
 
   try {
-
+    const rateLimit = await client.verify.v2.services
 
     await client.messages.create({
       body: `PropertyVerse Registration OTP: ${OTP}. Do not share this code with anyone, our employers do not ask for OTP`,
