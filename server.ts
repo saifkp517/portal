@@ -832,6 +832,7 @@ app.post('/signup/investor', async (req, res) => {
 
   return res.status(201).json({
     message: "User created successfully",
+    userId: investor.id,
     verified: false,
     success: true,
     user: {
@@ -870,7 +871,7 @@ app.get('/investor/:investorid', async (req, res) => {
 })
 
 app.post('/investor/update', async (req, res) => {
-  
+
   const { phoneno, id } = req.body;
 
   try {
