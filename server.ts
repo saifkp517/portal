@@ -615,33 +615,47 @@ app.post('/otp-mail', async (req, res) => {
 import twilio from "twilio";
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.AUTH_TOKEN;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+
 const client = twilio(accountSid, authToken);
 
+const rateLimit: { [key: string]: number } = {};
+
 app.post('/otp-sms', async (req, res) => {
-
   const { phone, OTP } = req.body;
+  console.log('Rate Limit Object:', rateLimit);
 
-
-  try {
-
-    await client.messages.create({
-      body: `PropertyVerse Registration OTP: ${OTP}. Do not share this code with anyone, our employers do not ask for OTP`,
-      from: "+18702769764",
-      to: `+91${phone}`,
-    });
-    console.log(OTP, phone)
-    // console.log(message.body);
-    // res.status(200).send(message.body)
-
-  } catch (error) {
-    console.log("Twilio Error:" + error);
-    return res.status(500).json({
-      message: "Internal  error" + error,
+  if (!phone || !OTP) {
+    return res.status(400).json({
+      message: "Phone number and OTP are required.",
       success: false,
     });
   }
-})
+
+  if (rateLimit[phone] && (Date.now() - rateLimit[phone]) < 2 * 60 * 1000) {
+    console.log("Rate limit hit for phone:", phone);
+    return res.status(429).json({
+      message: "Too many requests. Please try again later.",
+      success: false,
+    });
+  }
+  try {
+    client.messages.create({
+      body: `Your OTP is ${OTP}. Please do not share your OTP with anyone, employers do not ask for One Time Passwords`,
+      from: "+18702769764",
+      to: `+91${phone}`,
+    })
+    .then(message => console.log(message.sid))
+
+  } catch (error) {
+    console.error("Twilio Error:", error);
+    res.status(500).json({
+      message: `Internal error: ${error}`,
+      success: false,
+    });
+  }
+});
+
 
 
 //////////////////////////////authorization////////////////////////////////////
@@ -758,64 +772,75 @@ app.post('/oauth/investor', async (req, res) => {
 });
 
 app.post('/signup/investor', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, phone } = req.body;
 
-  try {
-    // Check if the user already exists
-    let investor = await prisma.investor.findFirst({
+  const handleExistingInvestor = (investor: any, res: Response) => {
+    if (investor.verified) {
+      return res.status(400).json({
+        userId: investor.id,
+        verified: true,
+        message: "An account with this email already exists. Please log in."
+      });
+    } else {
+      return res.status(200).json({
+        userId: investor.id,
+        verified: false,
+        message: "User Verification"
+      });
+    }
+  }
+
+  let [oauthInvestor, investor] = await Promise.all([
+    prisma.investor.findFirst({
       where: {
         email,
         provider: "google"
       }
-    });
-
-    if (investor) {
-      if (investor.verified == true) {
-        return res.status(400).json({
-          verified: true,
-          message: "An account with this email already exists. Please log in."
-        });
-      }
-      else {
-        return res.status(400).json({
-          verified: false,
-          message: "User Verification"
-        });
-      }
-    }
-
-    let hash = null;
-    if (!password) {
-      return res.status(400).send("Password is required.");
-    }
-    // Hash the password for traditional signup
-    hash = hashSync(password, genSaltSync(10));
-    // Create the user
-    investor = await prisma.investor.create({
-      data: {
+    }),
+    prisma.investor.findFirst({
+      where: {
         email,
-        password: hash,
         provider: "propertyverse"
       }
-    });
+    }),
+  ])
 
-    return res.status(201).json({
-      message: "User created successfully",
-      success: true,
-      user: {
-        id: investor.id,
-        email: investor.email,
-        provider: investor.provider
-      }
-    });
-
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      message: "Internal server error" + error,
-      success: false
-    });
+  if (investor) {
+    return handleExistingInvestor(investor, res);
   }
+
+  if (oauthInvestor) {
+    return handleExistingInvestor(oauthInvestor, res);
+  }
+
+  if (!password) {
+    return res.status(400).send("Password is required.");
+  }
+
+  // Hash the password for traditional signup
+  const hash = hashSync(password, genSaltSync(10));
+
+  // Create the user
+  investor = await prisma.investor.create({
+    data: {
+      email,
+      password: hash,
+      phoneno: phone,
+      provider: "propertyverse"
+    }
+  });
+
+  return res.status(201).json({
+    message: "User created successfully",
+    verified: false,
+    success: true,
+    user: {
+      id: investor.id,
+      email: investor.email,
+      provider: investor.provider
+    }
+  });
+
 });
 
 app.get('/investor/:investorid', async (req, res) => {
@@ -898,7 +923,7 @@ app.post('/generate-otp', async (req, res) => {
 })
 
 app.post('/verify-otp', async (req, res) => {
-  const { email, otp } = req.body;
+  const { email, otp, id } = req.body;
   if (!email || !otp) {
     return res.status(400).send("User Email and OTP is required!")
   }
@@ -914,7 +939,7 @@ app.post('/verify-otp', async (req, res) => {
 
     if (storedOtp === otp) {
       await prisma.investor.updateMany({
-        where: { email: email, provider: "google" },
+        where: { id },
         data: { verified: true }
       })
       res.status(200).send("OTP verified Successfully");
