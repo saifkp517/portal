@@ -645,7 +645,7 @@ app.post('/otp-sms', async (req, res) => {
       from: "+18702769764",
       to: `+91${phone}`,
     })
-    .then(message => console.log(message.sid))
+      .then(message => console.log(message.sid))
 
   } catch (error) {
     console.error("Twilio Error:", error);
@@ -870,15 +870,16 @@ app.get('/investor/:investorid', async (req, res) => {
 })
 
 app.post('/investor/update', async (req, res) => {
+  
+  const { phoneno, id } = req.body;
+
   try {
-    const { name, phoneno, id } = req.body;
 
     const userUpdate = await prisma.investor.update({
       where: {
         id
       },
       data: {
-        name,
         phoneno
       }
     })
