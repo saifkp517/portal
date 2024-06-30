@@ -346,7 +346,6 @@ const fileFilter = (req: Request, file: Express.Multer.File, cb: any): void => {
 
 const upload = multer({
   storage: storage,
-  fileFilter: fileFilter,
 })
 
 app.post('/photos/upload', upload.any(), async (req, res, next) => {
