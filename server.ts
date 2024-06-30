@@ -68,184 +68,256 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
 //////////////////////////////////Authentication handlers below//////////////////////////////////////////////
 
-//signup for channel partners
-app.post('/signup/partner', async (req, res) => {
+//signup for dashboard
 
-  const { name, phone, password, email } = req.body;
-
+app.get('/investors', async(req, res) => {
   try {
-    const user = await prisma.user.findUnique({ where: { email: email } })
+    const users = await prisma.investor.findMany();
 
-    if (!user) {
-      const hash = hashSync(password, genSaltSync(10));
-
-      const newUser = await prisma.user.create({
-        data: {
-          name: name,
-          password: hash,
-          email: email,
-          role: "PARTNER"
-        }
-      })
-
-      if (newUser) {
-        return res.status(200).json({
-          message: "User successfully Signed Up!",
-          success: true
-        })
-      }
+    if (users) {
+      return res.status(200).send(users);
     }
 
-    return res.json({
-      message: "Account with this Phone Number exists!",
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Internal server error" + error,
       success: false
-    })
+    });
   }
-  catch (error) {
-    console.log(error);
+})
+
+app.post('/signup/dashboard', async (req, res) => {
+
+  const { name, email, password } = req.body;
+
+  let user = await prisma.user.findFirst({
+    where: {
+      email,
+    }
+  })
+
+  if (user) {
+    return res.status(400).json({
+      userId: user.id,
+      message: "An account with this email already exists. Please log in."
+    });
   }
+
+  // Hash the password for traditional signup
+  const hash = hashSync(password, genSaltSync(10));
+
+  // Create the user
+  user = await prisma.user.create({
+    data: {
+      name,
+      email,
+      password: hash,
+      role: "USER",
+    }
+  });
+
+  return res.status(201).json({
+    message: "User created successfully",
+    userId: user.id,
+    verified: false,
+    success: true,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    }
+  });
 })
 
 
 //signin
-app.post('/signin/partner', async (req, res) => {
+app.post('/signin/dashboard', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await prisma.user.findUnique({ where: { email: email } })
+    // Find the user by email
+    let user = await prisma.user.findFirst({
+      where: {
+        email,
+      }
+    });
 
     if (!user) {
-      return res.status(404).json({
-        message: "Account with this Phone Number does not exist!",
+      return res.status(400).json({
+        message: "No account found with this email. Please sign up first.",
         success: false
-      })
+      });
     }
 
-    let passwordMatch = compareSync(password, user.password);
+    const isPasswordValid = compareSync(password, user.password!);
 
-    if (passwordMatch) {
-      let token = jwt.sign(
-        {
-          name: user.name,
-          email: user.email
-        },
-        jwtSecret,
-        { expiresIn: "3 days" }
-      )
-
-      let result = {
-        name: user.name,
-        email: user.email,
-        token: `Bearer ${token}`
-      }
-
-      return res.status(200).json({
-        ...result,
-        message: "Successfully Logged In!"
-      })
-    }
-    else {
-      return res.status(401).json({
-        message: "Invalid Credentials!",
+    if (!isPasswordValid) {
+      return res.status(400).json({
+        message: "Invalid email or password",
         success: false
-      })
+      });
     }
 
-
-  }
-  catch (error) { console.log(error) }
-})
-
-
-//signup for administrators
-app.post('/signup/admin', async (req, res) => {
-
-  const { name, phone, password, email } = req.body;
-
-  try {
-    const user = await prisma.user.findUnique({ where: { email: email } })
-
-    if (!user) {
-      const hash = hashSync(password, genSaltSync(10));
-
-      const newUser = await prisma.user.create({
-        data: {
-          name: name,
-          password: hash,
-          email: email,
-          role: "ADMIN"
-        }
-      })
-
-      if (newUser) {
-        return res.status(200).json({
-          message: "User successfully Signed Up!",
-          success: true
-        })
-      }
-    }
-
-    return res.json({
-      message: "Account with this Phone Number exists!",
+    return res.status(200).json({
+      message: "Logged in successfully",
+      success: true,
+      user
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Internal server error" + error,
       success: false
-    })
-  }
-  catch (error) {
-    console.log(error);
+    });
   }
 })
 
 
-//signin
-app.post('/signin/admin', async (req, res) => {
-  const { email, password, provider } = req.body;
+//admin functions 
+
+//authorize user
+app.post('/authorize', async (req, res) => {
+  const { id } = req.body;
 
   try {
-    const user = await prisma.user.findUnique({ where: { email: email } })
 
-    if (!user) {
-      return res.status(404).json({
-        message: "Account with this Email address does not exist!",
-        success: false
-      })
-    }
-
-    let passwordMatch = compareSync(password, user.password);
-
-    if (provider)
-
-      if (passwordMatch) {
-        return res.status(200).json({
-          message: "Successfully Logged In!",
-          user: user
-        })
+    const user = await prisma.user.findUnique({
+      where: {
+        id
+      },
+      select: {
+        id: true,
       }
-      else {
-        return res.status(401).json({
-          message: "Invalid Credentials!",
-          success: false
-        })
+    })
+
+    if (!user) return res.status(400).json({
+      message: "Invalid User Email"
+    })
+
+    await prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        authorized: true,
       }
+    })
 
+    return res.status(200).json({
+      message: "Authorized User!",
+      success: true,
+    });
 
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Internal server error" + error,
+      success: false
+    });
   }
-  catch (error) { console.log(error) }
 })
 
-//middleware to authorize users by role
-const userAuth = (req: CustomRequest, res: Response, next: NextFunction) => {
-  const authHeader = req.headers["authorization"];
-  if (!authHeader) return res.sendStatus(403);
-  const token = authHeader.split(" ")[1];
-  jwt.verify(token, jwtSecret, (err, decoded) => {
-    console.log("verifying");
-    if (err) return res.sendStatus(403); //invalid token
+//remove user
 
-    console.log(decoded); //for correct token
-    req.user = decoded;
-    next();
-  });
-}
+app.post('/delete-user', async (req, res) => {
+  const { id } = req.body;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        id
+      },
+      select: {
+        id: true,
+      }
+    })
+
+    if (!user) return res.status(400).json({
+      message: "Invalid User Email"
+    })
+
+    await prisma.user.delete({
+      where: {
+        id
+      }
+    })
+
+    return res.status(200).json({
+      message: "Authorized User!",
+      success: true,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Internal server error" + error,
+      success: false
+    });
+  }
+
+})
+
+//promote user to admin
+
+app.post('/promote-admin', async (req, res) => {
+
+  const { id } = req.body
+
+  try {
+
+    const user = await prisma.user.findUnique({
+      where: {
+        id
+      },
+      select: {
+        id: true,
+      }
+    })
+
+    if (!user) return res.status(400).json({
+      message: "Invalid User Email"
+    })
+
+    await prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        role: "ADMIN"
+      }
+    })
+
+    return res.status(200).json({
+      message: "Authorized User!",
+      success: true,
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Internal server error" + error,
+      success: false
+    });
+  }
+})
+
+
+//
+app.post('/checkperms', async (req, res) => {
+  const { id } = req.body;
+
+  try {
+    
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Internal server error" + error,
+      success: false
+    });
+  }
+})
+
+
 
 //////////////////////////////////Authentication handlers above//////////////////////////////////////////////
 
@@ -291,7 +363,9 @@ app.post('/createproperty', async (req, res) => {
   try {
     const {
       building_name,
+      funded,
       asset_type,
+      type,
       investment_size,
       lockin,
       entry_yeild,
@@ -301,11 +375,9 @@ app.post('/createproperty', async (req, res) => {
       location,
       tenant,
       overview,
-      floorplan,
       tenant_details,
       images,
       additional,
-      userId
     } = req.body;
 
     console.log(req.files);
@@ -313,6 +385,7 @@ app.post('/createproperty', async (req, res) => {
       data: {
         building_name,
         asset_type,
+        type,
         investment_size,
         lockin,
         entry_yeild,
@@ -322,11 +395,9 @@ app.post('/createproperty', async (req, res) => {
         location,
         tenant,
         overview,
-        floorplan: floorplan ? JSON.parse(floorplan) : null,
-        tenant_details: tenant_details ? JSON.parse(tenant_details) : null,
+        tenant_details: tenant_details ? tenant_details : null,
         images: images.length > 0 ? images : [],
         additional: additional ? additional : null,
-        userId
       }
     })
 
@@ -622,6 +693,7 @@ const client = twilio(accountSid, authToken);
 const rateLimit: { [key: string]: number } = {};
 
 app.post('/otp-sms', async (req, res) => {
+
   const { phone, OTP } = req.body;
   console.log('Rate Limit Object:', rateLimit);
 
@@ -656,35 +728,6 @@ app.post('/otp-sms', async (req, res) => {
   }
 });
 
-
-
-//////////////////////////////authorization////////////////////////////////////
-
-app.get('/authorize', userAuth, async (req: CustomRequest, res) => {
-  try {
-    const userEmail = req.user.email;
-    if (!userEmail) {
-      console.log("no")
-    }
-    const user = await prisma.user.findUnique({
-      where: {
-        email: userEmail
-      }
-    })
-    if (user) {
-      return res.status(200).json({
-        user: user,
-        success: true
-      })
-    }
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      message: "Internal server error" + error,
-      success: false
-    });
-  }
-})
 
 //////////////////////////////////investor interface///////////////////////////////////////
 

@@ -7,8 +7,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum PropertyType {
+  Commercial
+  Industrial
+  Agriculure
+  Residential
+}
+
 model Property {
-  id                 String   @id @default(uuid())
+  id                 String       @id @default(uuid())
+  type               PropertyType
   building_name      String
   asset_type         String
   investment_size    String
@@ -20,30 +28,39 @@ model Property {
   location           String
   tenant             String
   overview           String
-  floorplan          Json?
   tenant_details     Json?
   images             String[]
   creditriskanalysis String?
-  funded             Int      @default(0)
-  tables             Json?
+  funded             Int          @default(0)
   additional         Json?
-  user               User     @relation(fields: [userId], references: [email])
-  userId             String
 }
 
 enum Role {
-  PARTNER
+  USER
   ADMIN
 }
 
+enum UserPerms {
+  Create
+  Update
+  Delete
+}
+
+enum AdminPerms {
+  AddUser
+  DeleteUser
+  PromoteUser
+  LogAccess
+}
+
 model User {
-  id         String     @id @default(uuid())
-  name       String?
-  email      String     @unique
-  password   String
-  role       Role
-  properties Property[]
-  subscribed Boolean @default(true)
+  id       String    @id @default(uuid())
+  name     String?
+  email    String    @unique
+  password String
+  authorized Boolean @default(false)
+  notifs   Logging[]
+  role     Role
 }
 
 model Investor {
@@ -54,4 +71,13 @@ model Investor {
   password String?
   provider String?
   verified Boolean @default(false)
+}
+
+model Logging {
+  id        String   @id @default(uuid())
+  User      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+  text      String
+  link      String?
+  createdAt DateTime
 }
