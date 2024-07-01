@@ -7,16 +7,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum PropertyType {
-  Commercial
-  Industrial
-  Agriculure
-  Residential
-}
-
 model Property {
   id                 String       @id @default(uuid())
-  type               PropertyType
+  type               String
   building_name      String
   asset_type         String
   investment_size    String
